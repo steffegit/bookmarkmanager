@@ -1,17 +1,12 @@
 package me.atsteffe
 
-import io.ktor.http.*
-import io.ktor.serialization.kotlinx.json.*
 import io.ktor.server.application.*
-import io.ktor.server.html.*
-import io.ktor.server.http.content.*
-import io.ktor.server.plugins.contentnegotiation.*
-import io.ktor.server.request.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
-import kotlin.random.Random
-import kotlinx.html.*
+import me.atsteffe.repository.BookmarkRepository
+import me.atsteffe.service.BookmarkService
 import org.jetbrains.exposed.sql.*
+
+lateinit var bookmarkRepository: BookmarkRepository
+lateinit var bookmarkService: BookmarkService
 
 fun Application.configureDatabases() {
     val database = Database.connect(
@@ -20,4 +15,7 @@ fun Application.configureDatabases() {
         driver = "org.h2.Driver",
         password = "",
     )
+
+    bookmarkRepository = BookmarkRepository(database)
+    bookmarkService = BookmarkService(bookmarkRepository)
 }

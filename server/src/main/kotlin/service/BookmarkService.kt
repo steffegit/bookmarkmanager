@@ -65,6 +65,10 @@ class BookmarkService(private val bookmarkRepository: BookmarkRepository) {
         return bookmarkRepository.delete(id)
     }
 
+    fun findById(id: UUID): Bookmark? {
+        return bookmarkRepository.findById(id)
+    }
+
     private fun isValidUrl(url: String): Boolean {
         val urlRegex = ("^(https?://)?" + // optional http or https
                 "([\\w-]+\\.)+[\\w-]+" + // domain name
