@@ -1,4 +1,3 @@
-
 plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.ktor)
@@ -39,4 +38,7 @@ dependencies {
     implementation("io.ktor:ktor-serialization-gson:3.2.1")
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.kotlin.test.junit)
+    implementation("com.fleeksoft.ksoup:ksoup:0.2.4")
+    implementation("com.fleeksoft.ksoup:ksoup-kotlinx:0.2.4")
+    implementation("com.fleeksoft.ksoup:ksoup-network:0.2.4")
 }
