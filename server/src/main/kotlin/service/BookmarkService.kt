@@ -48,7 +48,8 @@ class BookmarkService(private val bookmarkRepository: BookmarkRepository) {
 
         // Re-validate URL
         if (url != null && url != existingBookmark.url) {
-            if (url.isBlank()) throw InvalidUrlException("URL cannot be empty.")
+//            URL can be blank -> No update to the URL
+//            if (url.isBlank()) throw InvalidUrlException("URL cannot be empty.")
 
             if (!isValidUrl(url))
                 throw InvalidUrlException("Invalid URL format.")
