@@ -41,4 +41,7 @@ dependencies {
     implementation("com.fleeksoft.ksoup:ksoup:0.2.4")
     implementation("com.fleeksoft.ksoup:ksoup-kotlinx:0.2.4")
     implementation("com.fleeksoft.ksoup:ksoup-network:0.2.4")
+    implementation("io.ktor:ktor-server-auth")
+    implementation("io.ktor:ktor-server-auth-jwt")
+    implementation("de.mkammerer:argon2-jvm:2.12")
 }

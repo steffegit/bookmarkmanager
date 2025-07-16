@@ -10,5 +10,6 @@ fun Application.module() {
     configureTemplating()
     configureSerialization()
     configureDatabases()
+    configureSecurity()
     configureRouting()
 }

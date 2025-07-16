@@ -1,6 +1,12 @@
 ktor:
-    application:
-        modules:
-            - me.atsteffe.ApplicationKt.module
-    deployment:
-        port: 8080
+  application:
+    modules:
+      - me.atsteffe.ApplicationKt.module
+  deployment:
+    port: 8080
+
+jwt:
+  secret: '%env:JWT_SECRET%'
+  issuer: "bookmarkmanager"
+  audience: "bookmarkmanager-users"
+  realm: "BookmarkManager"

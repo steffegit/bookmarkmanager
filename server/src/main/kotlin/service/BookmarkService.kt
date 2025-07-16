@@ -11,34 +11,35 @@ import java.util.UUID
 import java.util.regex.Pattern
 
 class BookmarkService(private val bookmarkRepository: BookmarkRepository) {
-    fun createBookmark(url: String, title: String?, description: String?): Bookmark {
+    fun createBookmark(userId: UUID, url: String, title: String?, description: String?): Bookmark {
         if (url.isBlank()) throw InvalidUrlException("URL cannot be empty.")
 
         if (!isValidUrl(url))
             throw InvalidUrlException("Invalid URL format.")
 
-        if (bookmarkRepository.findByUrl(url) != null) {
+        if (bookmarkRepository.findByUrl(url, userId) != null) {
             throw DuplicateBookmarkUrlException("A bookmark with this URL already exists.")
         }
 
         // For later: if we decide do create a chrome extension, we can get this information directly from the page
         val actualTitle = fetchTitleFromUrl(url) ?: title
 
-        val newBookmark = Bookmark(url = url, title = actualTitle, description = description)
+        val newBookmark = Bookmark(userId = userId, url = url, title = actualTitle, description = description)
 
         return bookmarkRepository.save(newBookmark)
     }
 
-    fun getAllBookmarks() = bookmarkRepository.findAll()
+    fun getAllBookmarks(userId: UUID) = bookmarkRepository.findAll(userId)
 
     fun updateBookmark(
         id: UUID,
+        userId: UUID,
         url: String? = null,
         title: String? = null,
         description: String? = null
     ): Bookmark {
         val existingBookmark =
-            bookmarkRepository.findById(id) ?: throw BookmarkNotFoundException("Bookmark with $id not found.")
+            bookmarkRepository.findById(id, userId) ?: throw BookmarkNotFoundException("Bookmark with $id not found.")
 
         val updatedBookmark = existingBookmark.copy(
             url = url ?: existingBookmark.url,
@@ -58,16 +59,16 @@ class BookmarkService(private val bookmarkRepository: BookmarkRepository) {
         return bookmarkRepository.save(updatedBookmark)
     }
 
-    fun deleteBookmark(id: UUID): Boolean {
-        if (bookmarkRepository.findById(id) == null) {
+    fun deleteBookmark(id: UUID, userId: UUID): Boolean {
+        if (bookmarkRepository.findById(id, userId) == null) {
             throw BookmarkNotFoundException("Bookmark with $id not found.")
         }
 
-        return bookmarkRepository.delete(id)
+        return bookmarkRepository.delete(id, userId)
     }
 
-    fun findById(id: UUID): Bookmark? {
-        return bookmarkRepository.findById(id)
+    fun findById(id: UUID, userId: UUID): Bookmark? {
+        return bookmarkRepository.findById(id, userId)
     }
 
     private fun isValidUrl(url: String): Boolean {
