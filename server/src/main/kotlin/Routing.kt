@@ -13,6 +13,8 @@ import me.atsteffe.model.LoginRequest
 import me.atsteffe.model.RegisterRequest
 import me.atsteffe.model.AuthResponse
 import me.atsteffe.model.toResponse
+import me.atsteffe.util.toUUID
+import me.atsteffe.util.requireUUID
 import java.util.UUID
 
 
@@ -44,18 +46,18 @@ fun Application.configureRouting() {
         authenticate {
             get("/api/bookmarks") {
                 val principal = call.principal<JWTPrincipal>()
-                val userId = principal!!.payload.getClaim("userId").asString()
-                val bookmarks = bookmarkService.getAllBookmarks(UUID.fromString(userId))
+                val userId = principal!!.payload.getClaim("userId").asString().toUUID()
+                val bookmarks = bookmarkService.getAllBookmarks(userId)
                 call.respond(bookmarks.map { it.toResponse() })
             }
 
             post("/api/bookmarks") {
                 val principal = call.principal<JWTPrincipal>()
-                val userId = principal!!.payload.getClaim("userId").asString()
+                val userId = principal!!.payload.getClaim("userId").asString().toUUID()
 
                 val bookmarkRequest = call.receive<BookmarkRequest>()
                 val newBookmark = bookmarkService.createBookmark(
-                    UUID.fromString(userId),
+                    userId,
                     bookmarkRequest.url,
                     bookmarkRequest.title,
                     bookmarkRequest.description
@@ -64,22 +66,13 @@ fun Application.configureRouting() {
             }
 
             put("/api/bookmarks/{id}") {
-                val requestId =
-                    call.parameters["id"] ?: return@put call.respond(HttpStatusCode.BadRequest, "ID is required.")
-
-                val id = try {
-                    UUID.fromString(requestId)
-                } catch (e: Exception) {
-                    return@put call.respond(HttpStatusCode.BadRequest, "Invalid ID format.")
-                }
-
+                val id = call.parameters.requireUUID("id")
+                val userId = call.principal<JWTPrincipal>()!!.payload.getClaim("userId").asString().toUUID()
                 val bookmarkUpdate = call.receive<BookmarkRequest>()
-                val principal = call.principal<JWTPrincipal>()
-                val userId = principal!!.payload.getClaim("userId").asString()
 
                 val updatedBookmark = bookmarkService.updateBookmark(
                     id,
-                    UUID.fromString(userId),
+                    userId,
                     bookmarkUpdate.url,
                     bookmarkUpdate.title,
                     bookmarkUpdate.description
@@ -88,19 +81,10 @@ fun Application.configureRouting() {
             }
 
             delete("/api/bookmarks/{id}") {
-                val requestId =
-                    call.parameters["id"] ?: return@delete call.respond(HttpStatusCode.BadRequest, "ID is required.")
+                val id = call.parameters.requireUUID("id")
+                val userId = call.principal<JWTPrincipal>()!!.payload.getClaim("userId").asString().toUUID()
 
-                val principal = call.principal<JWTPrincipal>()
-                val userId = principal!!.payload.getClaim("userId").asString()
-
-                val id = try {
-                    UUID.fromString(requestId)
-                } catch (e: Exception) {
-                    return@delete call.respond(HttpStatusCode.BadRequest, "Invalid ID format.")
-                }
-
-                val isBookmarkDeleted: Boolean = bookmarkService.deleteBookmark(id, UUID.fromString(userId))
+                val isBookmarkDeleted = bookmarkService.deleteBookmark(id, userId)
 
                 if (isBookmarkDeleted) {
                     call.respond(HttpStatusCode.NoContent, "Bookmark with ID $id successfully deleted.")
