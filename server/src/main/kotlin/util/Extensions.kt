@@ -2,7 +2,6 @@ package me.atsteffe.util
 
 import io.ktor.http.Parameters
 import io.ktor.server.plugins.*
-import io.ktor.util.*
 import java.util.UUID
 
 /**

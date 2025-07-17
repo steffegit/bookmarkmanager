@@ -5,93 +5,65 @@ import io.ktor.server.application.*
 import io.ktor.server.auth.authenticate
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.principal
+import io.ktor.server.html.respondHtml
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import me.atsteffe.model.BookmarkRequest
-import me.atsteffe.model.LoginRequest
-import me.atsteffe.model.RegisterRequest
-import me.atsteffe.model.AuthResponse
-import me.atsteffe.model.toResponse
-import me.atsteffe.util.toUUID
-import me.atsteffe.util.requireUUID
-import java.util.UUID
+import kotlinx.html.HTML
+import kotlinx.html.head
+import kotlinx.html.link
+import kotlinx.html.script
+import kotlinx.html.title
+import me.atsteffe.routes.authRoutes
+import me.atsteffe.routes.bookmarkRoutes
 
 
 fun Application.configureRouting() {
     routing {
-        post("/api/register") {
-            val registerRequest = call.receive<RegisterRequest>()
-            val user = userService.registerUser(
-                registerRequest.email,
-                registerRequest.password,
-                registerRequest.displayName
-            )
-            val token = jwtService.generateToken(user.id.toString())
-            call.respond(HttpStatusCode.Created, AuthResponse(token, user.toResponse()))
-        }
 
-        post("/api/login") {
-            val loginRequest = call.receive<LoginRequest>()
-            val user = userService.authenticateUser(loginRequest.email, loginRequest.password)
+        // HTML
 
-            if (user != null) {
-                val token = jwtService.generateToken(user.id.toString())
-                call.respond(HttpStatusCode.OK, AuthResponse(token, user.toResponse()))
-            } else {
-                call.respond(HttpStatusCode.Unauthorized, mapOf("error" to "Invalid credentials"))
+        get("/") {
+            call.respondHtml {
+                index()
             }
         }
 
-        authenticate {
-            get("/api/bookmarks") {
-                val principal = call.principal<JWTPrincipal>()
-                val userId = principal!!.payload.getClaim("userId").asString().toUUID()
-                val bookmarks = bookmarkService.getAllBookmarks(userId)
-                call.respond(bookmarks.map { it.toResponse() })
+        // API
+
+        route("/api") {
+            authRoutes()
+
+            authenticate {
+                bookmarkRoutes()
             }
+        }
+    }
+}
 
-            post("/api/bookmarks") {
-                val principal = call.principal<JWTPrincipal>()
-                val userId = principal!!.payload.getClaim("userId").asString().toUUID()
+fun HTML.index() {
+    head {
+        title {
+            +"Bookmark Manager"
+        }
+        // HTMX
+        script {
+            src = "https://cdn.jsdelivr.net/npm/htmx.org@2.0.6/dist/htmx.min.js"
+        }
 
-                val bookmarkRequest = call.receive<BookmarkRequest>()
-                val newBookmark = bookmarkService.createBookmark(
-                    userId,
-                    bookmarkRequest.url,
-                    bookmarkRequest.title,
-                    bookmarkRequest.description
-                )
-                call.respond(HttpStatusCode.Created, newBookmark.toResponse())
-            }
+        // Tailwind CSS
+        script {
+            src = "https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"
+        }
 
-            put("/api/bookmarks/{id}") {
-                val id = call.parameters.requireUUID("id")
-                val userId = call.principal<JWTPrincipal>()!!.payload.getClaim("userId").asString().toUUID()
-                val bookmarkUpdate = call.receive<BookmarkRequest>()
-
-                val updatedBookmark = bookmarkService.updateBookmark(
-                    id,
-                    userId,
-                    bookmarkUpdate.url,
-                    bookmarkUpdate.title,
-                    bookmarkUpdate.description
-                )
-                call.respond(HttpStatusCode.OK, updatedBookmark.toResponse())
-            }
-
-            delete("/api/bookmarks/{id}") {
-                val id = call.parameters.requireUUID("id")
-                val userId = call.principal<JWTPrincipal>()!!.payload.getClaim("userId").asString().toUUID()
-
-                val isBookmarkDeleted = bookmarkService.deleteBookmark(id, userId)
-
-                if (isBookmarkDeleted) {
-                    call.respond(HttpStatusCode.NoContent, "Bookmark with ID $id successfully deleted.")
-                } else {
-                    call.respond(HttpStatusCode.NotFound, "Bookmark not found or could not be deleted.")
-                }
-            }
+        // DaisyUI
+        script {
+            src = "https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"
+        }
+        link {
+            href = "https://cdn.jsdelivr.net/npm/daisyui@5"
+            rel = "stylesheet"
+            type = "text/css"
         }
     }
 }

@@ -25,8 +25,6 @@ dependencies {
     implementation(libs.ktor.server.html.builder)
     implementation(libs.kotlinx.html)
     implementation(libs.ktor.server.core)
-    implementation(libs.ktor.server.htmx)
-    implementation(libs.ktor.htmx.html)
     implementation(libs.ktor.serialization.kotlinx.json)
     implementation(libs.ktor.server.content.negotiation)
     implementation(libs.exposed.core)
