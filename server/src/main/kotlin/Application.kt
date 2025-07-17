@@ -11,6 +11,7 @@ fun Application.module() {
     configureTemplating()
     configureSerialization()
     configureDatabases()
+    configureStatusPages()
     configureSecurity()
     configureRouting()
 }

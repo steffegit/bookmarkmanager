@@ -5,6 +5,7 @@ import me.atsteffe.repository.UserRepository
 import me.atsteffe.util.PasswordUtils
 import me.atsteffe.util.UserAlreadyExists
 import me.atsteffe.util.InvalidCredentials
+import me.atsteffe.util.UnsupportedAuthenticationMethod
 import java.util.UUID
 
 class UserService(private val userRepository: UserRepository) {
@@ -39,7 +40,8 @@ class UserService(private val userRepository: UserRepository) {
 
         val storedHash = user.passwordHash
         if (storedHash == null) {
-            throw IllegalArgumentException("Something went wrong.")
+            // User was created using OAuth
+            throw UnsupportedAuthenticationMethod("User $email was registered through OAuth and cannot authenticate with password.")
         }
 
         val isValid = PasswordUtils.validatePassword(storedHash, password)

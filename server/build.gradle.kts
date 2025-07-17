@@ -45,4 +45,5 @@ dependencies {
     implementation("io.ktor:ktor-server-auth-jwt")
     implementation("de.mkammerer:argon2-jvm:2.12")
     implementation("io.ktor:ktor-server-call-logging")
+    implementation("io.ktor:ktor-server-status-pages")
 }
