@@ -8,14 +8,11 @@ import io.ktor.server.auth.principal
 import io.ktor.server.request.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
-import me.atsteffe.model.Bookmark
 import me.atsteffe.model.BookmarkRequest
-import me.atsteffe.model.BookmarkResponse
 import me.atsteffe.model.LoginRequest
 import me.atsteffe.model.RegisterRequest
 import me.atsteffe.model.AuthResponse
 import me.atsteffe.model.toResponse
-import me.atsteffe.service.JwtService
 import me.atsteffe.util.BookmarkNotFoundException
 import me.atsteffe.util.DuplicateBookmarkUrlException
 import me.atsteffe.util.InvalidUrlException
@@ -23,12 +20,6 @@ import java.util.UUID
 
 
 fun Application.configureRouting() {
-    val jwtSecret = environment.config.property("jwt.secret").getString()
-    val jwtDomain = environment.config.property("jwt.issuer").getString()
-    val jwtAudience = environment.config.property("jwt.audience").getString()
-
-    val jwtService = JwtService(jwtSecret, jwtDomain, jwtAudience)
-
     routing {
         post("/api/register") {
             try {
@@ -39,7 +30,7 @@ fun Application.configureRouting() {
                     registerRequest.displayName
                 )
                 val token = jwtService.generateToken(user.id.toString())
-                call.respond(HttpStatusCode.Created, AuthResponse(token, user))
+                call.respond(HttpStatusCode.Created, AuthResponse(token, user.toResponse()))
             } catch (e: IllegalArgumentException) {
                 call.respond(HttpStatusCode.BadRequest, mapOf("error" to (e.message ?: "Registration failed")))
             } catch (e: Exception) {
@@ -54,7 +45,7 @@ fun Application.configureRouting() {
 
                 if (user != null) {
                     val token = jwtService.generateToken(user.id.toString())
-                    call.respond(HttpStatusCode.OK, AuthResponse(token, user))
+                    call.respond(HttpStatusCode.OK, AuthResponse(token, user.toResponse()))
                 } else {
                     call.respond(HttpStatusCode.Unauthorized, mapOf("error" to "Invalid credentials"))
                 }
@@ -77,11 +68,8 @@ fun Application.configureRouting() {
                 val principal = call.principal<JWTPrincipal>()
                 val userId = principal!!.payload.getClaim("userId").asString()
 
-                println("User ID is $userId")
                 val bookmarkRequest = call.receive<BookmarkRequest>()
-
-                println("bookamrkRequest: $bookmarkRequest")
-
+                
                 try {
                     val newBookmark = bookmarkService.createBookmark(
                         UUID.fromString(userId),

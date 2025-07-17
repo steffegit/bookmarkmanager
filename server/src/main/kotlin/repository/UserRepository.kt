@@ -73,7 +73,7 @@ class UserRepository(private val database: Database) {
             }
         }
 
-        findById(user.id) ?: throw IllegalStateException("User not found after save operation")
+        findById(user.id) ?: throw IllegalStateException("User not found after save operation.")
     }
 
     private fun toUser(row: ResultRow) = User(

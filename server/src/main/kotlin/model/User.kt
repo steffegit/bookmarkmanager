@@ -4,9 +4,8 @@ import java.util.UUID
 import kotlinx.serialization.Serializable
 import me.atsteffe.util.UUIDSerializer
 
-@Serializable
 data class User(
-    @Serializable(with = UUIDSerializer::class) val id: UUID = UUID.randomUUID(),
+    val id: UUID = UUID.randomUUID(),
     val email: String,
     val displayName: String?,
     val googleId: String? = null,
@@ -28,7 +27,22 @@ data class RegisterRequest(
 )
 
 @Serializable
+data class UserResponse(
+    @Serializable(with = UUIDSerializer::class)
+    val id: UUID,
+    val email: String,
+    val displayName: String?,
+)
+
+@Serializable
 data class AuthResponse(
     val token: String,
-    val user: User
+    val user: UserResponse
 )
+
+fun User.toResponse(): UserResponse =
+    UserResponse(
+        id,
+        email,
+        displayName
+    )
