@@ -3,26 +3,23 @@ package me.atsteffe
 import io.ktor.server.application.*
 import io.ktor.server.auth.*
 import io.ktor.server.auth.jwt.*
+import me.atsteffe.config.SecurityConfig
 import me.atsteffe.service.JwtService
+import org.koin.ktor.ext.inject
 
-lateinit var jwtService: JwtService
 
 fun Application.configureSecurity() {
-    val jwtSecret = environment.config.property("jwt.secret").getString()
-    val jwtDomain = environment.config.property("jwt.issuer").getString()
-    val jwtAudience = environment.config.property("jwt.audience").getString()
-    val jwtRealm = environment.config.property("jwt.realm").getString()
-
-    jwtService = JwtService(jwtSecret, jwtDomain, jwtAudience)
+    val securityConfig by inject<SecurityConfig>()
+    val jwtService by inject<JwtService>()
 
     authentication {
         jwt {
-            realm = jwtRealm
+            realm = securityConfig.jwtRealm
             verifier(
                 jwtService.jwtVerifier
             )
             validate { credential ->
-                if (credential.payload.audience.contains(jwtAudience)) JWTPrincipal(credential.payload) else null
+                if (credential.payload.audience.contains(securityConfig.jwtAudience)) JWTPrincipal(credential.payload) else null
             }
         }
     }

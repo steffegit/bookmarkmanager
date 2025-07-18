@@ -3,58 +3,44 @@ package me.atsteffe.service
 import com.fleeksoft.ksoup.Ksoup
 import com.fleeksoft.ksoup.network.parseGetRequestBlocking
 import me.atsteffe.model.Bookmark
+import me.atsteffe.command.CreateBookmarkCommand
+import me.atsteffe.command.UpdateBookmarkCommand
 import me.atsteffe.repository.BookmarkRepository
 import me.atsteffe.util.BookmarkNotFoundException
 import me.atsteffe.util.DuplicateBookmarkUrlException
-import me.atsteffe.util.InvalidUrlException
 import java.util.UUID
-import java.util.regex.Pattern
 
 class BookmarkService(private val bookmarkRepository: BookmarkRepository) {
-    fun createBookmark(userId: UUID, url: String, title: String?, description: String?): Bookmark {
-        if (url.isBlank()) throw InvalidUrlException("URL cannot be empty.")
-
-        if (!isValidUrl(url))
-            throw InvalidUrlException("Invalid URL format.")
-
-        if (bookmarkRepository.findByUrl(url, userId) != null) {
+    fun createBookmark(command: CreateBookmarkCommand): Bookmark {
+        if (bookmarkRepository.findByUrl(command.url.toString(), command.userId) != null) {
             throw DuplicateBookmarkUrlException("A bookmark with this URL already exists.")
         }
 
         // For later: if we decide do create a chrome extension, we can get this information directly from the page
-        val actualTitle = fetchTitleFromUrl(url) ?: title
+        val actualTitle = fetchTitleFromUrl(command.url.toString()) ?: command.title
 
-        val newBookmark = Bookmark(userId = userId, url = url, title = actualTitle, description = description)
+        val newBookmark = Bookmark(
+            userId = command.userId,
+            url = command.url.toString(),
+            title = actualTitle,
+            description = command.description
+        )
 
         return bookmarkRepository.save(newBookmark)
     }
 
     fun getAllBookmarks(userId: UUID) = bookmarkRepository.findAll(userId)
 
-    fun updateBookmark(
-        id: UUID,
-        userId: UUID,
-        url: String? = null,
-        title: String? = null,
-        description: String? = null
-    ): Bookmark {
+    fun updateBookmark(command: UpdateBookmarkCommand): Bookmark {
         val existingBookmark =
-            bookmarkRepository.findById(id, userId) ?: throw BookmarkNotFoundException("Bookmark with $id not found.")
+            bookmarkRepository.findById(command.id, command.userId)
+                ?: throw BookmarkNotFoundException("Bookmark with ${command.id} not found.")
 
         val updatedBookmark = existingBookmark.copy(
-            url = url ?: existingBookmark.url,
-            title = title ?: existingBookmark.title,
-            description = description ?: existingBookmark.description
+            url = command.url?.toString() ?: existingBookmark.url,
+            title = command.title ?: existingBookmark.title,
+            description = command.description ?: existingBookmark.description
         )
-
-        // Re-validate URL
-        if (url != null && url != existingBookmark.url) {
-//            URL can be blank -> No update to the URL
-//            if (url.isBlank()) throw InvalidUrlException("URL cannot be empty.")
-
-            if (!isValidUrl(url))
-                throw InvalidUrlException("Invalid URL format.")
-        }
 
         return bookmarkRepository.save(updatedBookmark)
     }
@@ -69,15 +55,6 @@ class BookmarkService(private val bookmarkRepository: BookmarkRepository) {
 
     fun findById(id: UUID, userId: UUID): Bookmark? {
         return bookmarkRepository.findById(id, userId)
-    }
-
-    private fun isValidUrl(url: String): Boolean {
-        val urlRegex = ("^(https?://)?" + // optional http or https
-                "([\\w-]+\\.)+[\\w-]+" + // domain name
-                "(:\\d+)?(/\\S*)?$") // optional port and path
-
-        val pattern = Pattern.compile(urlRegex, Pattern.CASE_INSENSITIVE)
-        return pattern.matcher(url).matches()
     }
 
     private fun fetchTitleFromUrl(url: String): String? {

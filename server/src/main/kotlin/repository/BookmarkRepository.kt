@@ -6,7 +6,6 @@ import org.jetbrains.exposed.dao.id.UUIDTable
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.ReferenceOption
 import org.jetbrains.exposed.sql.ResultRow
-import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -28,12 +27,6 @@ object BookmarksTable : UUIDTable("bookmarks") {
 }
 
 class BookmarkRepository(private val database: Database) {
-    init {
-        transaction(database) {
-            SchemaUtils.create(UsersTable, BookmarksTable)
-        }
-    }
-
     fun findAll(userId: UUID): List<Bookmark> = transaction(database) {
         BookmarksTable.selectAll().where { BookmarksTable.userId eq userId }.map { toBookmark(it) }
     }

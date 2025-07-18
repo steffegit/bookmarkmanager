@@ -7,6 +7,7 @@ import io.ktor.server.response.*
 import me.atsteffe.util.BookmarkNotFoundException
 import me.atsteffe.util.DuplicateBookmarkUrlException
 import me.atsteffe.util.InvalidCredentials
+import me.atsteffe.util.InvalidEmailException
 import me.atsteffe.util.InvalidUrlException
 import me.atsteffe.util.UnsupportedAuthenticationMethod
 import me.atsteffe.util.UserAlreadyExists
@@ -42,7 +43,11 @@ fun Application.configureStatusPages() {
         }
 
         exception<InvalidUrlException> { call, cause ->
-            call.respond(HttpStatusCode.BadRequest, mapOf("message" to (cause.message ?: "Invalid URL")))
+            call.respond(HttpStatusCode.UnprocessableEntity, mapOf("message" to (cause.message ?: "Invalid URL")))
+        }
+
+        exception<InvalidEmailException> { call, cause ->
+            call.respond(HttpStatusCode.UnprocessableEntity, mapOf("message" to (cause.message ?: "Invalid email")))
         }
 
         // General exceptions

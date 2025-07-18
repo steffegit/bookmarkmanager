@@ -44,4 +44,8 @@ dependencies {
     implementation("de.mkammerer:argon2-jvm:2.12")
     implementation("io.ktor:ktor-server-call-logging")
     implementation("io.ktor:ktor-server-status-pages")
+    implementation(project.dependencies.platform(libs.koin.bom))
+    implementation(libs.koin.core)
+    implementation(libs.koin.ktor)
+    implementation(libs.koin.logger.slf4j)
 }

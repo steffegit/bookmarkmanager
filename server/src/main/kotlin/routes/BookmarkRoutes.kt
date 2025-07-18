@@ -1,7 +1,6 @@
 package me.atsteffe.routes
 
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.application.Application
 import io.ktor.server.auth.jwt.JWTPrincipal
 import io.ktor.server.auth.principal
 import io.ktor.server.request.receive
@@ -12,12 +11,14 @@ import io.ktor.server.routing.get
 import io.ktor.server.routing.post
 import io.ktor.server.routing.put
 import io.ktor.server.routing.route
-import io.ktor.server.routing.routing
-import me.atsteffe.bookmarkService
+import me.atsteffe.command.toCreateCommand
+import me.atsteffe.command.toUpdateCommand
 import me.atsteffe.model.BookmarkRequest
 import me.atsteffe.model.toResponse
+import me.atsteffe.service.BookmarkService
 import me.atsteffe.util.requireUUID
 import me.atsteffe.util.toUUID
+import org.koin.ktor.ext.inject
 
 fun Route.bookmarkRoutes() {
     route("/bookmarks") {
@@ -30,23 +31,23 @@ fun Route.bookmarkRoutes() {
 
 fun Route.createBookmark() {
     post {
+        val bookmarkService by inject<BookmarkService>()
         val principal = call.principal<JWTPrincipal>()
+
         val userId = principal!!.payload.getClaim("userId").asString().toUUID()
 
         val bookmarkRequest = call.receive<BookmarkRequest>()
-        val newBookmark = bookmarkService.createBookmark(
-            userId,
-            bookmarkRequest.url,
-            bookmarkRequest.title,
-            bookmarkRequest.description
-        )
+        val command = bookmarkRequest.toCreateCommand(userId)
+        val newBookmark = bookmarkService.createBookmark(command)
         call.respond(HttpStatusCode.Created, newBookmark.toResponse())
     }
 }
 
 fun Route.getBookmarks() {
     get {
+        val bookmarkService by inject<BookmarkService>()
         val principal = call.principal<JWTPrincipal>()
+
         val userId = principal!!.payload.getClaim("userId").asString().toUUID()
         val bookmarks = bookmarkService.getAllBookmarks(userId)
         call.respond(bookmarks.map { it.toResponse() })
@@ -55,23 +56,22 @@ fun Route.getBookmarks() {
 
 fun Route.updateBookmark() {
     put("/{id}") {
+        val bookmarkService by inject<BookmarkService>()
+
         val id = call.parameters.requireUUID("id")
         val userId = call.principal<JWTPrincipal>()!!.payload.getClaim("userId").asString().toUUID()
         val bookmarkUpdate = call.receive<BookmarkRequest>()
 
-        val updatedBookmark = bookmarkService.updateBookmark(
-            id,
-            userId,
-            bookmarkUpdate.url,
-            bookmarkUpdate.title,
-            bookmarkUpdate.description
-        )
+        val command = bookmarkUpdate.toUpdateCommand(id, userId)
+        val updatedBookmark = bookmarkService.updateBookmark(command)
         call.respond(HttpStatusCode.OK, updatedBookmark.toResponse())
     }
 }
 
 fun Route.deleteBookmark() {
     delete("/{id}") {
+        val bookmarkService by inject<BookmarkService>()
+        
         val id = call.parameters.requireUUID("id")
         val userId = call.principal<JWTPrincipal>()!!.payload.getClaim("userId").asString().toUUID()
 

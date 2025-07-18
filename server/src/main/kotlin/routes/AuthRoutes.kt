@@ -1,19 +1,20 @@
 package me.atsteffe.routes
 
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.application.Application
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
 import io.ktor.server.routing.post
 import io.ktor.server.routing.route
-import io.ktor.server.routing.routing
-import me.atsteffe.jwtService
+import me.atsteffe.command.toCommand
 import me.atsteffe.model.AuthResponse
 import me.atsteffe.model.LoginRequest
 import me.atsteffe.model.RegisterRequest
 import me.atsteffe.model.toResponse
-import me.atsteffe.userService
+import me.atsteffe.service.AuthenticationService
+import me.atsteffe.service.JwtService
+import me.atsteffe.service.UserService
+import org.koin.ktor.ext.inject
 
 fun Route.authRoutes() {
     route("/auth") {
@@ -24,8 +25,12 @@ fun Route.authRoutes() {
 
 fun Route.loginRoute() {
     post("/login") {
+        val authenticationService by inject<AuthenticationService>()
+        val jwtService by inject<JwtService>()
+
         val loginRequest = call.receive<LoginRequest>()
-        val user = userService.authenticateUser(loginRequest.email, loginRequest.password)
+        val command = loginRequest.toCommand()
+        val user = authenticationService.authenticateUser(command)
 
         if (user != null) {
             val token = jwtService.generateToken(user.id.toString())
@@ -38,12 +43,12 @@ fun Route.loginRoute() {
 
 fun Route.registerRoute() {
     post("/register") {
+        val userService by inject<UserService>()
+        val jwtService by inject<JwtService>()
+        
         val registerRequest = call.receive<RegisterRequest>()
-        val user = userService.registerUser(
-            registerRequest.email,
-            registerRequest.password,
-            registerRequest.displayName
-        )
+        val command = registerRequest.toCommand()
+        val user = userService.registerUser(command)
         val token = jwtService.generateToken(user.id.toString())
         call.respond(HttpStatusCode.Created, AuthResponse(token, user.toResponse()))
     }

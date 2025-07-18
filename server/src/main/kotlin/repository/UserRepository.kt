@@ -5,7 +5,6 @@ import me.atsteffe.util.MAX_VARCHAR_LENGTH
 import org.jetbrains.exposed.dao.id.UUIDTable
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.ResultRow
-import org.jetbrains.exposed.sql.SchemaUtils
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
@@ -21,12 +20,6 @@ object UsersTable : UUIDTable("users") {
 }
 
 class UserRepository(private val database: Database) {
-    init {
-        transaction(database) {
-            SchemaUtils.create(UsersTable)
-        }
-    }
-
     fun findById(id: UUID): User? = transaction(database) {
         UsersTable.selectAll().where { UsersTable.id eq id }.map {
             toUser(it)
