@@ -14,11 +14,8 @@ class UserService(private val userRepository: UserRepository) {
 
     fun registerUser(command: RegisterCommand): User {
 
-        val existingUser = userRepository.findByEmail(command.email.toString())
-
-        if (existingUser != null) {
-            throw UserAlreadyExists("User with email ${command.email} already exists.")
-        }
+        userRepository.findByEmail(command.email.toString())
+            ?.let { throw UserAlreadyExists("User with email ${command.email} already exists.") }
 
         val passwordHash = PasswordUtils.hashPassword(command.password)
         val user = User(

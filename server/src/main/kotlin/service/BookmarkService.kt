@@ -2,6 +2,7 @@ package me.atsteffe.service
 
 import com.fleeksoft.ksoup.Ksoup
 import com.fleeksoft.ksoup.network.parseGetRequestBlocking
+import com.fleeksoft.ksoup.nodes.Document
 import me.atsteffe.model.Bookmark
 import me.atsteffe.command.CreateBookmarkCommand
 import me.atsteffe.command.UpdateBookmarkCommand
@@ -12,9 +13,8 @@ import java.util.UUID
 
 class BookmarkService(private val bookmarkRepository: BookmarkRepository) {
     fun createBookmark(command: CreateBookmarkCommand): Bookmark {
-        if (bookmarkRepository.findByUrl(command.url.toString(), command.userId) != null) {
-            throw DuplicateBookmarkUrlException("A bookmark with this URL already exists.")
-        }
+        bookmarkRepository.findByUrl(command.url.toString(), command.userId)
+            ?.let { throw DuplicateBookmarkUrlException("A bookmark with this URL already exists.") }
 
         // For later: if we decide do create a chrome extension, we can get this information directly from the page
         val actualTitle = fetchTitleFromUrl(command.url.toString()) ?: command.title
@@ -46,9 +46,7 @@ class BookmarkService(private val bookmarkRepository: BookmarkRepository) {
     }
 
     fun deleteBookmark(id: UUID, userId: UUID): Boolean {
-        if (bookmarkRepository.findById(id, userId) == null) {
-            throw BookmarkNotFoundException("Bookmark with $id not found.")
-        }
+        bookmarkRepository.findById(id, userId) ?: throw BookmarkNotFoundException("Bookmark with $id not found.")
 
         return bookmarkRepository.delete(id, userId)
     }
@@ -58,7 +56,7 @@ class BookmarkService(private val bookmarkRepository: BookmarkRepository) {
     }
 
     private fun fetchTitleFromUrl(url: String): String? {
-        val doc: com.fleeksoft.ksoup.nodes.Document = Ksoup.parseGetRequestBlocking(url)
+        val doc: Document = Ksoup.parseGetRequestBlocking(url)
 
         return doc.title()
     }

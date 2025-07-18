@@ -30,14 +30,13 @@ fun Route.loginRoute() {
 
         val loginRequest = call.receive<LoginRequest>()
         val command = loginRequest.toCommand()
-        val user = authenticationService.authenticateUser(command)
+        val user = authenticationService.authenticateUser(command) ?: return@post call.respond(
+            HttpStatusCode.Unauthorized,
+            mapOf("message" to "Invalid credentials")
+        )
 
-        if (user != null) {
-            val token = jwtService.generateToken(user.id.toString())
-            call.respond(HttpStatusCode.OK, AuthResponse(token, user.toResponse()))
-        } else {
-            call.respond(HttpStatusCode.Unauthorized, mapOf("message" to "Invalid credentials"))
-        }
+        val token = jwtService.generateToken(user.id.toString())
+        call.respond(HttpStatusCode.OK, AuthResponse(token, user.toResponse()))
     }
 }
 
@@ -45,11 +44,12 @@ fun Route.registerRoute() {
     post("/register") {
         val userService by inject<UserService>()
         val jwtService by inject<JwtService>()
-        
+
         val registerRequest = call.receive<RegisterRequest>()
         val command = registerRequest.toCommand()
         val user = userService.registerUser(command)
         val token = jwtService.generateToken(user.id.toString())
+        
         call.respond(HttpStatusCode.Created, AuthResponse(token, user.toResponse()))
     }
 }
