@@ -15,13 +15,19 @@ fun Application.configureSecurity() {
     authentication {
         jwt {
             realm = securityConfig.jwtRealm
-            verifier(
-                jwtService.jwtVerifier
-            )
+            verifier(jwtService.jwtVerifier)
             validate { credential ->
-                if (credential.payload.audience.contains(securityConfig.jwtAudience)) JWTPrincipal(credential.payload) else null
+                val jwtId = credential.payload.id
+
+                if (jwtId != null &&
+                    !jwtService.isTokenBlacklistedByJwtId(jwtId) &&
+                    credential.payload.audience.contains(securityConfig.jwtAudience)
+                ) {
+                    JWTPrincipal(credential.payload)
+                } else {
+                    null
+                }
             }
         }
     }
-
 }

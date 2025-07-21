@@ -9,6 +9,14 @@ import me.atsteffe.util.DuplicateBookmarkUrlException
 import me.atsteffe.util.InvalidCredentials
 import me.atsteffe.util.InvalidEmailException
 import me.atsteffe.util.InvalidUrlException
+import me.atsteffe.util.JwtException
+import me.atsteffe.util.JwtPrincipalInvalidException
+import me.atsteffe.util.JwtTokenBlacklistedException
+import me.atsteffe.util.JwtTokenInvalidException
+import me.atsteffe.util.JwtTokenInvalidFormatException
+import me.atsteffe.util.JwtTokenMissingException
+import me.atsteffe.util.JwtTokenMissingClaimsException
+import me.atsteffe.util.JwtTokenRefreshFailedException
 import me.atsteffe.util.UnsupportedAuthenticationMethod
 import me.atsteffe.util.UserAlreadyExists
 
@@ -30,6 +38,41 @@ fun Application.configureStatusPages() {
 
         exception<UserAlreadyExists> { call, cause ->
             call.respond(HttpStatusCode.Conflict, mapOf("message" to (cause.message ?: "User already exists")))
+        }
+
+        // JWT exceptions
+
+        exception<JwtTokenMissingException> { call, cause ->
+            call.respond(HttpStatusCode.BadRequest, mapOf("message" to cause.message))
+        }
+
+        exception<JwtTokenInvalidFormatException> { call, cause ->
+            call.respond(HttpStatusCode.BadRequest, mapOf("message" to cause.message))
+        }
+
+        exception<JwtTokenBlacklistedException> { call, cause ->
+            call.respond(HttpStatusCode.Unauthorized, mapOf("message" to cause.message))
+        }
+
+        exception<JwtTokenInvalidException> { call, cause ->
+            call.respond(HttpStatusCode.Unauthorized, mapOf("message" to cause.message))
+        }
+
+        exception<JwtTokenMissingClaimsException> { call, cause ->
+            call.respond(HttpStatusCode.BadRequest, mapOf("message" to cause.message))
+        }
+
+        exception<JwtTokenRefreshFailedException> { call, cause ->
+            call.respond(HttpStatusCode.Unauthorized, mapOf("message" to cause.message))
+        }
+
+        exception<JwtPrincipalInvalidException> { call, cause ->
+            call.respond(HttpStatusCode.Unauthorized, mapOf("message" to cause.message))
+        }
+
+        // Generic JWT exception fallback
+        exception<JwtException> { call, cause ->
+            call.respond(HttpStatusCode.Unauthorized, mapOf("message" to (cause.message ?: "JWT authentication error")))
         }
 
         // Bookmark-related exceptions

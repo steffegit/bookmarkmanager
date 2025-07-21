@@ -1,6 +1,7 @@
 package me.atsteffe.routes
 
 import io.ktor.http.HttpStatusCode
+import io.ktor.server.auth.authenticate
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
@@ -14,12 +15,21 @@ import me.atsteffe.model.toResponse
 import me.atsteffe.service.AuthenticationService
 import me.atsteffe.service.JwtService
 import me.atsteffe.service.UserService
+import me.atsteffe.util.JwtPrincipalInvalidException
+import me.atsteffe.util.extractBearerTokenOrThrow
+import me.atsteffe.util.getUserIdFromJWT
 import org.koin.ktor.ext.inject
 
 fun Route.authRoutes() {
     route("/auth") {
         loginRoute()
         registerRoute()
+        
+        authenticate {
+            logoutRoute()
+            refreshTokenRoute()
+            validateTokenRoute()
+        }
     }
 }
 
@@ -51,5 +61,47 @@ fun Route.registerRoute() {
         val token = jwtService.generateToken(user.id.toString())
         
         call.respond(HttpStatusCode.Created, AuthResponse(token, user.toResponse()))
+    }
+}
+
+fun Route.logoutRoute() {
+    post("/logout") {
+        val jwtService by inject<JwtService>()
+        val token = call.extractBearerTokenOrThrow()
+        
+        jwtService.invalidateToken(token)
+        call.respond(HttpStatusCode.OK, mapOf("message" to "Successfully logged out"))
+    }
+}
+
+fun Route.refreshTokenRoute() {
+    post("/refresh") {
+        val jwtService by inject<JwtService>()
+        val oldToken = call.extractBearerTokenOrThrow()
+        
+        val newToken = jwtService.refreshToken(oldToken)
+        call.respond(HttpStatusCode.OK, mapOf("token" to newToken))
+    }
+}
+
+fun Route.validateTokenRoute() {
+    post("/validate") {
+        val userService by inject<UserService>()
+        
+        // For authenticated routes, we can use the JWT principal directly
+        val userId = call.getUserIdFromJWT() ?: throw JwtPrincipalInvalidException()
+        
+        val user = userService.findById(userId)
+        if (user != null) {
+            call.respond(HttpStatusCode.OK, mapOf(
+                "valid" to true,
+                "user" to user.toResponse()
+            ))
+        } else {
+            call.respond(HttpStatusCode.Unauthorized, mapOf(
+                "valid" to false,
+                "message" to "User no longer exists"
+            ))
+        }
     }
 }

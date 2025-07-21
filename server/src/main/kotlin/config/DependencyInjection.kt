@@ -2,6 +2,7 @@ package me.atsteffe.config
 
 import io.ktor.server.application.*
 import me.atsteffe.repository.BookmarkRepository
+import me.atsteffe.repository.JwtRepository
 import me.atsteffe.repository.UserRepository
 import me.atsteffe.service.AuthenticationService
 import me.atsteffe.service.BookmarkService
@@ -27,6 +28,7 @@ val databaseModule = module {
     single { DatabaseMigrationService(get()) }
     single { UserRepository(get()) }
     single { BookmarkRepository(get()) }
+    single { JwtRepository(get()) }
 }
 
 val serviceModule = module {
@@ -37,7 +39,8 @@ val serviceModule = module {
         JwtService(
             get<SecurityConfig>().jwtSecret,
             get<SecurityConfig>().jwtIssuer,
-            get<SecurityConfig>().jwtAudience
+            get<SecurityConfig>().jwtAudience,
+            get() // JwtRepository
         )
     }
 }

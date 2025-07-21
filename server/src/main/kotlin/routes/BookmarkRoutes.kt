@@ -1,8 +1,6 @@
 package me.atsteffe.routes
 
 import io.ktor.http.HttpStatusCode
-import io.ktor.server.auth.jwt.JWTPrincipal
-import io.ktor.server.auth.principal
 import io.ktor.server.request.receive
 import io.ktor.server.response.respond
 import io.ktor.server.routing.Route
@@ -16,8 +14,9 @@ import me.atsteffe.command.toUpdateCommand
 import me.atsteffe.model.BookmarkRequest
 import me.atsteffe.model.toResponse
 import me.atsteffe.service.BookmarkService
+import me.atsteffe.util.JwtPrincipalInvalidException
+import me.atsteffe.util.getUserIdFromJWT
 import me.atsteffe.util.requireUUID
-import me.atsteffe.util.toUUID
 import org.koin.ktor.ext.inject
 
 fun Route.bookmarkRoutes() {
@@ -32,10 +31,7 @@ fun Route.bookmarkRoutes() {
 fun Route.createBookmark() {
     post {
         val bookmarkService by inject<BookmarkService>()
-        val principal = call.principal<JWTPrincipal>()
-
-        val userId = principal?.payload?.getClaim("userId")?.asString()?.toUUID() 
-            ?: return@post call.respond(HttpStatusCode.Unauthorized, mapOf("message" to "Authentication required"))
+        val userId = call.getUserIdFromJWT() ?: throw JwtPrincipalInvalidException()
 
         val bookmarkRequest = call.receive<BookmarkRequest>()
         val command = bookmarkRequest.toCreateCommand(userId)
@@ -48,12 +44,9 @@ fun Route.createBookmark() {
 fun Route.getBookmarks() {
     get {
         val bookmarkService by inject<BookmarkService>()
-        val principal = call.principal<JWTPrincipal>()
-
-        val userId = principal?.payload?.getClaim("userId")?.asString()?.toUUID()
-            ?: return@get call.respond(HttpStatusCode.Unauthorized, mapOf("message" to "Authentication required"))
+        val userId = call.getUserIdFromJWT() ?: throw JwtPrincipalInvalidException()
+        
         val bookmarks = bookmarkService.getAllBookmarks(userId)
-
         call.respond(bookmarks.map { it.toResponse() })
     }
 }
@@ -61,12 +54,10 @@ fun Route.getBookmarks() {
 fun Route.updateBookmark() {
     put("/{id}") {
         val bookmarkService by inject<BookmarkService>()
-
         val id = call.parameters.requireUUID("id")
-        val userId = call.principal<JWTPrincipal>()?.payload?.getClaim("userId")?.asString()?.toUUID()
-            ?: return@put call.respond(HttpStatusCode.Unauthorized, mapOf("message" to "Authentication required"))
+        val userId = call.getUserIdFromJWT() ?: throw JwtPrincipalInvalidException()
+        
         val bookmarkUpdate = call.receive<BookmarkRequest>()
-
         val command = bookmarkUpdate.toUpdateCommand(id, userId)
         val updatedBookmark = bookmarkService.updateBookmark(command)
         
@@ -77,10 +68,8 @@ fun Route.updateBookmark() {
 fun Route.deleteBookmark() {
     delete("/{id}") {
         val bookmarkService by inject<BookmarkService>()
-
         val id = call.parameters.requireUUID("id")
-        val userId = call.principal<JWTPrincipal>()?.payload?.getClaim("userId")?.asString()?.toUUID()
-            ?: return@delete call.respond(HttpStatusCode.Unauthorized, mapOf("message" to "Authentication required"))
+        val userId = call.getUserIdFromJWT() ?: throw JwtPrincipalInvalidException()
 
         val isBookmarkDeleted = bookmarkService.deleteBookmark(id, userId)
 

@@ -1,6 +1,7 @@
 package me.atsteffe.service
 
 import me.atsteffe.repository.BookmarksTable
+import me.atsteffe.repository.JwtStorage
 import me.atsteffe.repository.UsersTable
 import org.jetbrains.exposed.sql.Database
 import org.jetbrains.exposed.sql.SchemaUtils
@@ -14,7 +15,7 @@ class DatabaseMigrationService(private val database: Database) {
         logger.info("Running database migrations...")
         
         transaction(database) {
-            SchemaUtils.create(UsersTable, BookmarksTable)
+            SchemaUtils.create(UsersTable, BookmarksTable, JwtStorage)
         }
         
         logger.info("Database migrations completed successfully")

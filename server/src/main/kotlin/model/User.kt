@@ -14,35 +14,19 @@ data class User(
 )
 
 @Serializable
-data class LoginRequest(
-    val email: String,
-    val password: String
-)
+data class LoginRequest(val email: String, val password: String)
 
 @Serializable
-data class RegisterRequest(
-    val email: String,
-    val password: String,
-    val displayName: String?
-)
+data class RegisterRequest(val email: String, val password: String, val displayName: String?)
 
 @Serializable
 data class UserResponse(
-    @Serializable(with = UUIDSerializer::class)
-    val id: UUID,
+    @Serializable(with = UUIDSerializer::class) val id: UUID,
     val email: String,
     val displayName: String?,
 )
 
 @Serializable
-data class AuthResponse(
-    val token: String,
-    val user: UserResponse
-)
+data class AuthResponse(val token: String, val user: UserResponse)
 
-fun User.toResponse(): UserResponse =
-    UserResponse(
-        id,
-        email,
-        displayName
-    )
+fun User.toResponse(): UserResponse = UserResponse(id, email, displayName)
