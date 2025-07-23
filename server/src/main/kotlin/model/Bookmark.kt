@@ -10,6 +10,7 @@ data class Bookmark(
     val url: String,
     val title: String?,
     val description: String?,
+    val ogImageUrl: String?  // Open Graph image
 //    val tags: List<String> = emptyList()
 )
 
@@ -26,7 +27,8 @@ data class BookmarkResponse(
     val id: UUID,
     val url: String,
     val title: String?,
-    val description: String?
+    val description: String?,
+    val ogImageUrl: String?
 )
 
 fun Bookmark.toResponse(): BookmarkResponse {
@@ -34,6 +36,7 @@ fun Bookmark.toResponse(): BookmarkResponse {
         id = this.id,
         url = this.url,
         title = this.title,
-        description = this.description
+        description = this.description,
+        ogImageUrl = this.ogImageUrl
     )
 }

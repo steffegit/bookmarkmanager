@@ -11,19 +11,27 @@ import me.atsteffe.util.BookmarkNotFoundException
 import me.atsteffe.util.DuplicateBookmarkUrlException
 import java.util.UUID
 
+data class ParsedData(
+    val title: String?,
+    val ogImageURL: String?
+)
+
 class BookmarkService(private val bookmarkRepository: BookmarkRepository) {
     fun createBookmark(command: CreateBookmarkCommand): Bookmark {
         bookmarkRepository.findByUrl(command.url.toString(), command.userId)
             ?.let { throw DuplicateBookmarkUrlException("A bookmark with this URL already exists.") }
 
         // For later: if we decide do create a chrome extension, we can get this information directly from the page
-        val actualTitle = fetchTitleFromUrl(command.url.toString()) ?: command.title
+        val data = fetchDataFromUrl(command.url.toString())
+        val actualTitle = data.title ?: command.title
+        val ogImageUrl = data.ogImageURL
 
         val newBookmark = Bookmark(
             userId = command.userId,
             url = command.url.toString(),
             title = actualTitle,
-            description = command.description
+            description = command.description,
+            ogImageUrl = ogImageUrl
         )
 
         return bookmarkRepository.save(newBookmark)
@@ -55,9 +63,26 @@ class BookmarkService(private val bookmarkRepository: BookmarkRepository) {
         return bookmarkRepository.findById(id, userId)
     }
 
+    private fun fetchDataFromUrl(url: String): ParsedData {
+        val doc: Document = Ksoup.parseGetRequestBlocking(url)
+
+        val title = doc.title()
+
+        // Grab the meta tag that has property="og:image" and grab the content attribute
+
+        val ogImageUrl = doc.selectFirst("meta[property=og:image]")?.attr("content") ?: ""
+
+        return ParsedData(
+            title,
+            ogImageUrl
+        )
+
+    }
+
     private fun fetchTitleFromUrl(url: String): String? {
         val doc: Document = Ksoup.parseGetRequestBlocking(url)
 
         return doc.title()
     }
+
 }

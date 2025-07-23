@@ -20,6 +20,8 @@ object BookmarksTable : UUIDTable("bookmarks") {
     val url = varchar("url", 2 * MAX_VARCHAR_LENGTH)
     val title = varchar("title", MAX_VARCHAR_LENGTH).nullable()
     val description = text("description").nullable()
+    val ogImageUrl = varchar("og_image_url", 2 * MAX_VARCHAR_LENGTH).nullable() // Not all websites might have this
+
 
     init {
         uniqueIndex(url, userId) // Prevent same user from having duplicate URLs
@@ -50,6 +52,7 @@ class BookmarkRepository(private val database: Database) {
                 it[url] = bookmark.url
                 it[title] = bookmark.title
                 it[description] = bookmark.description
+                it[ogImageUrl] = bookmark.ogImageUrl
             }
         } else {
             BookmarksTable.insert {
@@ -58,6 +61,7 @@ class BookmarkRepository(private val database: Database) {
                 it[url] = bookmark.url
                 it[title] = bookmark.title
                 it[description] = bookmark.description
+                it[ogImageUrl] = bookmark.ogImageUrl
             }
         }
 
@@ -76,6 +80,7 @@ class BookmarkRepository(private val database: Database) {
         userId = row[BookmarksTable.userId],
         url = row[BookmarksTable.url],
         title = row[BookmarksTable.title],
-        description = row[BookmarksTable.description]
+        description = row[BookmarksTable.description],
+        ogImageUrl = row[BookmarksTable.ogImageUrl]
     )
 }
