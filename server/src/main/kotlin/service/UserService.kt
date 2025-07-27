@@ -1,6 +1,6 @@
 package me.atsteffe.service
 
-import me.atsteffe.command.RegisterCommand
+import me.atsteffe.command.SignupCommand
 import me.atsteffe.model.User
 import me.atsteffe.repository.UserRepository
 import me.atsteffe.util.PasswordUtils
@@ -12,7 +12,7 @@ class UserService(private val userRepository: UserRepository) {
 
     fun findByEmail(email: String): User? = userRepository.findByEmail(email)
 
-    fun registerUser(command: RegisterCommand): User {
+    fun signupUser(command: SignupCommand): User {
 
         userRepository.findByEmail(command.email.toString())
             ?.let { throw UserAlreadyExists("User with email ${command.email} already exists.") }

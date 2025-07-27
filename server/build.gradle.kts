@@ -49,4 +49,5 @@ dependencies {
     implementation(libs.koin.core)
     implementation(libs.koin.ktor)
     implementation(libs.koin.logger.slf4j)
+    implementation("io.ktor:ktor-server-cors")
 }

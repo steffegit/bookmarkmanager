@@ -1,7 +1,7 @@
 package me.atsteffe.command
 
 import me.atsteffe.model.LoginRequest
-import me.atsteffe.model.RegisterRequest
+import me.atsteffe.model.SignupRequest
 import me.atsteffe.util.Email
 
 data class LoginCommand(
@@ -9,7 +9,7 @@ data class LoginCommand(
     val password: String
 )
 
-data class RegisterCommand(
+data class SignupCommand(
     val email: Email,
     val password: String,
     val displayName: String?
@@ -22,8 +22,8 @@ fun LoginRequest.toCommand(): LoginCommand {
     )
 }
 
-fun RegisterRequest.toCommand(): RegisterCommand {
-    return RegisterCommand(
+fun SignupRequest.toCommand(): SignupCommand {
+    return SignupCommand(
         email = Email(this.email),
         password = this.password,
         displayName = this.displayName

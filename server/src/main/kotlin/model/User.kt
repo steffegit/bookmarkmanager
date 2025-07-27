@@ -17,7 +17,7 @@ data class User(
 data class LoginRequest(val email: String, val password: String)
 
 @Serializable
-data class RegisterRequest(val email: String, val password: String, val displayName: String?)
+data class SignupRequest(val email: String, val password: String, val displayName: String?)
 
 @Serializable
 data class UserResponse(
