@@ -50,4 +50,11 @@ dependencies {
     implementation(libs.koin.ktor)
     implementation(libs.koin.logger.slf4j)
     implementation("io.ktor:ktor-server-cors")
+    implementation("org.postgresql:postgresql:42.7.7")
+}
+
+ktor {
+    fatJar {
+        archiveFileName.set("fat.jar")
+    }
 }

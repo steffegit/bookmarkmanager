@@ -17,11 +17,12 @@ import org.koin.logger.slf4jLogger
 
 val databaseModule = module {
     single<Database> {
+        val dbConfig = get<DatabaseConfig>()
         Database.connect(
-            url = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1",
-            user = "root",
-            driver = "org.h2.Driver",
-            password = "",
+            url = dbConfig.url,
+            user = dbConfig.user,
+            password = dbConfig.password,
+            driver = dbConfig.driver
         )
     }
 
@@ -47,6 +48,7 @@ val serviceModule = module {
 
 fun createConfigModule(application: Application) = module {
     single { SecurityConfig.fromEnvironment(application) }
+    single { DatabaseConfig.fromConfig(application) }
 }
 
 fun Application.configureDependencyInjection() {

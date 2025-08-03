@@ -23,7 +23,7 @@ import org.koin.ktor.ext.inject
 fun Route.authRoutes() {
     route("/auth") {
         loginRoute()
-        registerRoute()
+        signupRoute()
 
         authenticate {
             logoutRoute()
@@ -50,8 +50,8 @@ fun Route.loginRoute() {
     }
 }
 
-fun Route.registerRoute() {
-    post("/register") {
+fun Route.signupRoute() {
+    post("/signup") {
         val userService by inject<UserService>()
         val jwtService by inject<JwtService>()
 
@@ -96,14 +96,12 @@ fun Route.verifyTokenRoute() {
             call.respond(
                 HttpStatusCode.OK, mapOf(
                     "valid" to true,
-                    "user" to user.toResponse()
                 )
             )
         } else {
             call.respond(
                 HttpStatusCode.Unauthorized, mapOf(
                     "valid" to false,
-                    "message" to "User no longer exists"
                 )
             )
         }

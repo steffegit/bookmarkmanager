@@ -8,6 +8,7 @@ import org.jetbrains.exposed.sql.SqlExpressionBuilder.less
 import org.jetbrains.exposed.sql.javatime.CurrentDateTime
 import org.jetbrains.exposed.sql.javatime.datetime
 import org.jetbrains.exposed.sql.transactions.transaction
+import org.postgresql.util.PSQLException
 import java.time.LocalDateTime
 
 // Used to store invalidated JWT's (usually I should've used a KV like Redis)
@@ -21,10 +22,30 @@ object JwtStorage : UUIDTable("jwt_blacklist") {
 class JwtRepository(private val database: Database) {
 
     fun invalidateToken(jwtToken: JwtToken) = transaction(database) {
-        JwtStorage.insert {
-            it[tokenId] = jwtToken.tokenId
-            it[userId] = jwtToken.userId
-            it[expiresAt] = jwtToken.expiresAt
+        try {
+            JwtStorage.insert {
+                it[tokenId] = jwtToken.tokenId
+                it[userId] = jwtToken.userId
+                it[expiresAt] = jwtToken.expiresAt
+            }
+        } catch (e: PSQLException) {
+            // Check if this is specifically a unique constraint violation
+            if (e.sqlState == "23505") { // PostgreSQL unique constraint violation code
+                // Token already blacklisted, ignore - the goal is achieved
+                return@transaction
+            } else {
+                // Re-throw if it's a different type of PostgreSQL error
+                throw e
+            }
+        } catch (e: Exception) {
+            // Handle any other database-related exceptions
+            if (e.message?.contains("duplicate key value violates unique constraint") == true) {
+                // Token already blacklisted, ignore
+                return@transaction
+            } else {
+                // Re-throw if it's a different type of error
+                throw e
+            }
         }
     }
 

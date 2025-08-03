@@ -10,7 +10,13 @@ ktor:
   development: true
 
 jwt:
-  secret: '%env:JWT_SECRET%'
+  secret: "%env:JWT_SECRET%"
   issuer: "bookmarkmanager"
   audience: "bookmarkmanager-users"
   realm: "BookmarkManager"
+
+storage:
+  driverClassName: "org.postgresql.Driver"
+  jdbcURL: "jdbc:postgresql://db:5432/bookmarkmanager"
+  user: "postgres"
+  password: ""
