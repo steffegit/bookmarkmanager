@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Download, Github, LogIn, LogOut, Menu, X } from "lucide-react";
+import { Download, Github, LogIn, LogOut, Menu } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useMediaQuery } from "usehooks-ts";
@@ -72,13 +72,19 @@ export default function Header() {
             ))}
           </div>
           <div className="flex gap-2 items-center tracking-tight">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-full hover:cursor-pointer"
+            <a
+              href="https://github.com/steffegit/bookmarkmanager"
+              target="_blank"
+              rel="noopener noreferrer"
             >
-              <Github />
-            </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="rounded-full hover:cursor-pointer"
+              >
+                <Github />
+              </Button>
+            </a>
             {!isAuthenticated && (
               <Button
                 variant="outline"
