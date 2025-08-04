@@ -9,6 +9,8 @@ import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import org.jetbrains.exposed.sql.update
 import org.jetbrains.exposed.sql.insert
+import org.jetbrains.exposed.sql.javatime.CurrentDateTime
+import org.jetbrains.exposed.sql.javatime.datetime
 import java.util.UUID
 
 object UsersTable : UUIDTable("users") {
@@ -17,6 +19,7 @@ object UsersTable : UUIDTable("users") {
     val googleId = varchar("googleId", MAX_VARCHAR_LENGTH).uniqueIndex().nullable()
     val githubId = varchar("githubId", MAX_VARCHAR_LENGTH).uniqueIndex().nullable()
     val passwordHash = varchar("passwordHash", MAX_VARCHAR_LENGTH).nullable()
+    val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
 }
 
 class UserRepository(private val database: Database) {
@@ -54,6 +57,7 @@ class UserRepository(private val database: Database) {
                 it[googleId] = user.googleId
                 it[githubId] = user.githubId
                 it[passwordHash] = user.passwordHash
+                // Note: createdAt is not updated on existing users
             }
         } else {
             UsersTable.insert {
@@ -63,6 +67,7 @@ class UserRepository(private val database: Database) {
                 it[googleId] = user.googleId
                 it[githubId] = user.githubId
                 it[passwordHash] = user.passwordHash
+                // createdAt will be automatically set by the database
             }
         }
 
@@ -75,6 +80,7 @@ class UserRepository(private val database: Database) {
         displayName = row[UsersTable.displayName],
         googleId = row[UsersTable.googleId],
         githubId = row[UsersTable.githubId],
-        passwordHash = row[UsersTable.passwordHash]
+        passwordHash = row[UsersTable.passwordHash],
+        createdAt = row[UsersTable.createdAt]
     )
 }

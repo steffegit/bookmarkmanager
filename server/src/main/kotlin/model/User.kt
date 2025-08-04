@@ -1,8 +1,10 @@
 package me.atsteffe.model
 
 import java.util.UUID
+import java.time.LocalDateTime
 import kotlinx.serialization.Serializable
 import me.atsteffe.util.UUIDSerializer
+import me.atsteffe.util.LocalDateTimeSerializer
 
 data class User(
     val id: UUID = UUID.randomUUID(),
@@ -10,7 +12,8 @@ data class User(
     val displayName: String?,
     val googleId: String? = null,
     val githubId: String? = null,
-    val passwordHash: String? = null
+    val passwordHash: String? = null,
+    val createdAt: LocalDateTime? = null
 )
 
 @Serializable
@@ -24,9 +27,10 @@ data class UserResponse(
     @Serializable(with = UUIDSerializer::class) val id: UUID,
     val email: String,
     val displayName: String?,
+    @Serializable(with = LocalDateTimeSerializer::class) val createdAt: LocalDateTime?
 )
 
 @Serializable
 data class AuthResponse(val token: String, val user: UserResponse)
 
-fun User.toResponse(): UserResponse = UserResponse(id, email, displayName)
+fun User.toResponse(): UserResponse = UserResponse(id, email, displayName, createdAt)

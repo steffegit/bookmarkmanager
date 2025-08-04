@@ -13,6 +13,8 @@ import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.update
+import org.jetbrains.exposed.sql.javatime.CurrentDateTime
+import org.jetbrains.exposed.sql.javatime.datetime
 import java.util.UUID
 
 object BookmarksTable : UUIDTable("bookmarks") {
@@ -21,7 +23,7 @@ object BookmarksTable : UUIDTable("bookmarks") {
     val title = varchar("title", MAX_VARCHAR_LENGTH).nullable()
     val description = text("description").nullable()
     val ogImageUrl = varchar("og_image_url", 2 * MAX_VARCHAR_LENGTH).nullable() // Not all websites might have this
-
+    val createdAt = datetime("created_at").defaultExpression(CurrentDateTime)
 
     init {
         uniqueIndex(url, userId) // Prevent same user from having duplicate URLs
@@ -53,6 +55,7 @@ class BookmarkRepository(private val database: Database) {
                 it[title] = bookmark.title
                 it[description] = bookmark.description
                 it[ogImageUrl] = bookmark.ogImageUrl
+                // Note: createdAt is not updated on existing bookmarks
             }
         } else {
             BookmarksTable.insert {
@@ -62,6 +65,7 @@ class BookmarkRepository(private val database: Database) {
                 it[title] = bookmark.title
                 it[description] = bookmark.description
                 it[ogImageUrl] = bookmark.ogImageUrl
+                // createdAt will be automatically set by the database
             }
         }
 
@@ -81,6 +85,7 @@ class BookmarkRepository(private val database: Database) {
         url = row[BookmarksTable.url],
         title = row[BookmarksTable.title],
         description = row[BookmarksTable.description],
-        ogImageUrl = row[BookmarksTable.ogImageUrl]
+        ogImageUrl = row[BookmarksTable.ogImageUrl],
+        createdAt = row[BookmarksTable.createdAt]
     )
 }

@@ -2,7 +2,9 @@ package me.atsteffe.model
 
 import kotlinx.serialization.Serializable
 import me.atsteffe.util.UUIDSerializer
+import me.atsteffe.util.LocalDateTimeSerializer
 import java.util.UUID
+import java.time.LocalDateTime
 
 data class Bookmark(
     val id: UUID = UUID.randomUUID(),
@@ -10,7 +12,8 @@ data class Bookmark(
     val url: String,
     val title: String?,
     val description: String?,
-    val ogImageUrl: String?  // Open Graph image
+    val ogImageUrl: String?,  // Open Graph image
+    val createdAt: LocalDateTime? = null
 //    val tags: List<String> = emptyList()
 )
 
@@ -28,7 +31,8 @@ data class BookmarkResponse(
     val url: String,
     val title: String?,
     val description: String?,
-    val ogImageUrl: String?
+    val ogImageUrl: String?,
+    @Serializable(with = LocalDateTimeSerializer::class) val createdAt: LocalDateTime?
 )
 
 fun Bookmark.toResponse(): BookmarkResponse {
@@ -37,6 +41,7 @@ fun Bookmark.toResponse(): BookmarkResponse {
         url = this.url,
         title = this.title,
         description = this.description,
-        ogImageUrl = this.ogImageUrl
+        ogImageUrl = this.ogImageUrl,
+        createdAt = this.createdAt
     )
 }

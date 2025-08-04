@@ -17,6 +17,6 @@ jwt:
 
 storage:
   driverClassName: "org.postgresql.Driver"
-  jdbcURL: "jdbc:postgresql://db:5432/bookmarkmanager"
+  jdbcURL: "jdbc:postgresql://localhost:5432/bookmarkmanager"
   user: "postgres"
   password: ""
