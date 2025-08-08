@@ -11,6 +11,7 @@ import me.atsteffe.command.toCommand
 import me.atsteffe.model.AuthResponse
 import me.atsteffe.model.LoginRequest
 import me.atsteffe.model.SignupRequest
+import me.atsteffe.model.VerifyResponse
 import me.atsteffe.model.toResponse
 import me.atsteffe.service.AuthenticationService
 import me.atsteffe.service.JwtService
@@ -55,8 +56,8 @@ fun Route.signupRoute() {
         val userService by inject<UserService>()
         val jwtService by inject<JwtService>()
 
-        val registerRequest = call.receive<SignupRequest>()
-        val command = registerRequest.toCommand()
+        val signupRequest = call.receive<SignupRequest>()
+        val command = signupRequest.toCommand()
         val user = userService.signupUser(command)
         val token = jwtService.generateToken(user.id.toString())
 
@@ -94,15 +95,13 @@ fun Route.verifyTokenRoute() {
         val user = userService.findById(userId)
         if (user != null) {
             call.respond(
-                HttpStatusCode.OK, mapOf(
-                    "valid" to true,
-                )
+                HttpStatusCode.OK,
+                VerifyResponse(valid = true, user = user.toResponse())
             )
         } else {
             call.respond(
-                HttpStatusCode.Unauthorized, mapOf(
-                    "valid" to false,
-                )
+                HttpStatusCode.Unauthorized,
+                VerifyResponse(valid = false, user = null)
             )
         }
     }

@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Download, Github, LogIn, LogOut, Menu } from "lucide-react";
+import { Download, Github, LogIn, LogOut, Menu, User } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useMediaQuery } from "usehooks-ts";
@@ -110,16 +110,27 @@ export default function Header() {
               Export
             </Button>
             {isAuthenticated && (
-              <Button
-                variant="outline"
-                size="xs"
-                className="hover:cursor-pointer"
-              >
-                <Link to="/logout" className="flex items-center gap-2">
-                  <LogOut className="scale-80" />
-                  Log Out
-                </Link>
-              </Button>
+              <>
+                <Button
+                  variant="outline"
+                  size="xs"
+                  className="hover:cursor-pointer"
+                >
+                  <Link to="/logout" className="flex items-center gap-2">
+                    <LogOut className="scale-80" />
+                    Log Out
+                  </Link>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="hover:cursor-pointer rounded-full scale-80 -ml-1"
+                >
+                  <Link to="/profile" className="flex items-center">
+                    <User />
+                  </Link>
+                </Button>
+              </>
             )}
           </div>
         </nav>
@@ -203,16 +214,28 @@ export default function Header() {
                   </Button>
 
                   {isAuthenticated && (
-                    <Button variant="ghost" className="w-full justify-start">
-                      <Link
-                        to="/logout"
-                        onClick={() => setIsMenuOpen(false)}
-                        className="flex gap-2 items-center justify-start w-full"
-                      >
-                        <LogOut className="h-4 w-4 -ml-1" />
-                        Log Out
-                      </Link>
-                    </Button>
+                    <>
+                      <Button variant="ghost" className="w-full justify-start">
+                        <Link
+                          to="/profile"
+                          onClick={() => setIsMenuOpen(false)}
+                          className="flex gap-2 items-center justify-start w-full"
+                        >
+                          <User className="h-4 w-4 -ml-1" />
+                          Profile
+                        </Link>
+                      </Button>
+                      <Button variant="ghost" className="w-full justify-start">
+                        <Link
+                          to="/logout"
+                          onClick={() => setIsMenuOpen(false)}
+                          className="flex gap-2 items-center justify-start w-full"
+                        >
+                          <LogOut className="h-4 w-4 -ml-1" />
+                          Log Out
+                        </Link>
+                      </Button>
+                    </>
                   )}
                 </div>
 

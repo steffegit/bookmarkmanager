@@ -16,7 +16,7 @@ data class BlacklistedToken(
     val userId: UUID,
     val expiresAt: LocalDateTime,
     val invalidatedAt: LocalDateTime
-) 
+)
 
 sealed class TokenResult {
     data class Success(val token: String) : TokenResult()

@@ -5,6 +5,7 @@ import io.ktor.server.auth.authenticate
 import io.ktor.server.routing.*
 import me.atsteffe.routes.authRoutes
 import me.atsteffe.routes.bookmarkRoutes
+import me.atsteffe.routes.profileRoutes
 
 
 fun Application.configureRouting() {
@@ -14,6 +15,7 @@ fun Application.configureRouting() {
 
             authenticate {
                 bookmarkRoutes()
+                profileRoutes()
             }
         }
     }

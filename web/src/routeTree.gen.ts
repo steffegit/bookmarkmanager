@@ -10,13 +10,21 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as LogoutRouteImport } from './routes/logout'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ProfileIndexRouteImport } from './routes/profile.index'
+import { Route as ProfileChangePasswordRouteImport } from './routes/profile.change-password'
 
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LogoutRoute = LogoutRouteImport.update({
@@ -34,38 +42,78 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ProfileIndexRoute = ProfileIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ProfileRoute,
+} as any)
+const ProfileChangePasswordRoute = ProfileChangePasswordRouteImport.update({
+  id: '/change-password',
+  path: '/change-password',
+  getParentRoute: () => ProfileRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/logout': typeof LogoutRoute
+  '/profile': typeof ProfileRouteWithChildren
   '/signup': typeof SignupRoute
+  '/profile/change-password': typeof ProfileChangePasswordRoute
+  '/profile/': typeof ProfileIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/logout': typeof LogoutRoute
   '/signup': typeof SignupRoute
+  '/profile/change-password': typeof ProfileChangePasswordRoute
+  '/profile': typeof ProfileIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/login': typeof LoginRoute
   '/logout': typeof LogoutRoute
+  '/profile': typeof ProfileRouteWithChildren
   '/signup': typeof SignupRoute
+  '/profile/change-password': typeof ProfileChangePasswordRoute
+  '/profile/': typeof ProfileIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/logout' | '/signup'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/logout'
+    | '/profile'
+    | '/signup'
+    | '/profile/change-password'
+    | '/profile/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/logout' | '/signup'
-  id: '__root__' | '/' | '/login' | '/logout' | '/signup'
+  to:
+    | '/'
+    | '/login'
+    | '/logout'
+    | '/signup'
+    | '/profile/change-password'
+    | '/profile'
+  id:
+    | '__root__'
+    | '/'
+    | '/login'
+    | '/logout'
+    | '/profile'
+    | '/signup'
+    | '/profile/change-password'
+    | '/profile/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LoginRoute: typeof LoginRoute
   LogoutRoute: typeof LogoutRoute
+  ProfileRoute: typeof ProfileRouteWithChildren
   SignupRoute: typeof SignupRoute
 }
 
@@ -76,6 +124,13 @@ declare module '@tanstack/react-router' {
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/logout': {
@@ -99,13 +154,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/profile/': {
+      id: '/profile/'
+      path: '/'
+      fullPath: '/profile/'
+      preLoaderRoute: typeof ProfileIndexRouteImport
+      parentRoute: typeof ProfileRoute
+    }
+    '/profile/change-password': {
+      id: '/profile/change-password'
+      path: '/change-password'
+      fullPath: '/profile/change-password'
+      preLoaderRoute: typeof ProfileChangePasswordRouteImport
+      parentRoute: typeof ProfileRoute
+    }
   }
 }
+
+interface ProfileRouteChildren {
+  ProfileChangePasswordRoute: typeof ProfileChangePasswordRoute
+  ProfileIndexRoute: typeof ProfileIndexRoute
+}
+
+const ProfileRouteChildren: ProfileRouteChildren = {
+  ProfileChangePasswordRoute: ProfileChangePasswordRoute,
+  ProfileIndexRoute: ProfileIndexRoute,
+}
+
+const ProfileRouteWithChildren =
+  ProfileRoute._addFileChildren(ProfileRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LoginRoute: LoginRoute,
   LogoutRoute: LogoutRoute,
+  ProfileRoute: ProfileRouteWithChildren,
   SignupRoute: SignupRoute,
 }
 export const routeTree = rootRouteImport

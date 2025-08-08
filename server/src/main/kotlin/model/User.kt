@@ -31,6 +31,12 @@ data class UserResponse(
 )
 
 @Serializable
+data class ChangePasswordRequest(val oldPassword: String, val newPassword: String)
+
+@Serializable
+data class VerifyResponse(val valid: Boolean, val user: UserResponse?)
+
+@Serializable
 data class AuthResponse(val token: String, val user: UserResponse)
 
 fun User.toResponse(): UserResponse = UserResponse(id, email, displayName, createdAt)

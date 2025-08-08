@@ -18,14 +18,18 @@ class UserService(private val userRepository: UserRepository) {
             ?.let { throw UserAlreadyExists("User with email ${command.email} already exists.") }
 
         val passwordHash = PasswordUtils.hashPassword(command.password)
+        val emailPrefix = command.email.toString().substringBefore("@")
         val user = User(
             email = command.email.toString(),
             passwordHash = passwordHash,
-            displayName = command.displayName
+            displayName = command.displayName ?: emailPrefix
         )
 
         return userRepository.save(user)
     }
 
+    fun updateUser(user: User): User {
+        return userRepository.save(user)
+    }
 
 }

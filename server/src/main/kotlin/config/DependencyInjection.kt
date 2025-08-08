@@ -8,6 +8,7 @@ import me.atsteffe.service.AuthenticationService
 import me.atsteffe.service.BookmarkService
 import me.atsteffe.service.DatabaseMigrationService
 import me.atsteffe.service.JwtService
+import me.atsteffe.service.UserProfileService
 import me.atsteffe.service.UserService
 import org.jetbrains.exposed.sql.Database
 import org.koin.dsl.module
@@ -34,6 +35,7 @@ val databaseModule = module {
 
 val serviceModule = module {
     single { UserService(get()) }
+    single { UserProfileService(get()) }
     single { BookmarkService(get()) }
     single { AuthenticationService(get()) }
     single {
