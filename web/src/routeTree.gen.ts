@@ -10,9 +10,11 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SignupRouteImport } from './routes/signup'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as LogoutRouteImport } from './routes/logout'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as CollectionsRouteImport } from './routes/collections'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProfileIndexRouteImport } from './routes/profile.index'
 import { Route as ProfileChangePasswordRouteImport } from './routes/profile.change-password'
@@ -20,6 +22,11 @@ import { Route as ProfileChangePasswordRouteImport } from './routes/profile.chan
 const SignupRoute = SignupRouteImport.update({
   id: '/signup',
   path: '/signup',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ProfileRoute = ProfileRouteImport.update({
@@ -35,6 +42,11 @@ const LogoutRoute = LogoutRouteImport.update({
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CollectionsRoute = CollectionsRouteImport.update({
+  id: '/collections',
+  path: '/collections',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -55,17 +67,21 @@ const ProfileChangePasswordRoute = ProfileChangePasswordRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/collections': typeof CollectionsRoute
   '/login': typeof LoginRoute
   '/logout': typeof LogoutRoute
   '/profile': typeof ProfileRouteWithChildren
+  '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
   '/profile/change-password': typeof ProfileChangePasswordRoute
   '/profile/': typeof ProfileIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/collections': typeof CollectionsRoute
   '/login': typeof LoginRoute
   '/logout': typeof LogoutRoute
+  '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
   '/profile/change-password': typeof ProfileChangePasswordRoute
   '/profile': typeof ProfileIndexRoute
@@ -73,9 +89,11 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/collections': typeof CollectionsRoute
   '/login': typeof LoginRoute
   '/logout': typeof LogoutRoute
   '/profile': typeof ProfileRouteWithChildren
+  '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
   '/profile/change-password': typeof ProfileChangePasswordRoute
   '/profile/': typeof ProfileIndexRoute
@@ -84,26 +102,32 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/collections'
     | '/login'
     | '/logout'
     | '/profile'
+    | '/settings'
     | '/signup'
     | '/profile/change-password'
     | '/profile/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/collections'
     | '/login'
     | '/logout'
+    | '/settings'
     | '/signup'
     | '/profile/change-password'
     | '/profile'
   id:
     | '__root__'
     | '/'
+    | '/collections'
     | '/login'
     | '/logout'
     | '/profile'
+    | '/settings'
     | '/signup'
     | '/profile/change-password'
     | '/profile/'
@@ -111,9 +135,11 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CollectionsRoute: typeof CollectionsRoute
   LoginRoute: typeof LoginRoute
   LogoutRoute: typeof LogoutRoute
   ProfileRoute: typeof ProfileRouteWithChildren
+  SettingsRoute: typeof SettingsRoute
   SignupRoute: typeof SignupRoute
 }
 
@@ -124,6 +150,13 @@ declare module '@tanstack/react-router' {
       path: '/signup'
       fullPath: '/signup'
       preLoaderRoute: typeof SignupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/profile': {
@@ -145,6 +178,13 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/collections': {
+      id: '/collections'
+      path: '/collections'
+      fullPath: '/collections'
+      preLoaderRoute: typeof CollectionsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -186,9 +226,11 @@ const ProfileRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CollectionsRoute: CollectionsRoute,
   LoginRoute: LoginRoute,
   LogoutRoute: LogoutRoute,
   ProfileRoute: ProfileRouteWithChildren,
+  SettingsRoute: SettingsRoute,
   SignupRoute: SignupRoute,
 }
 export const routeTree = rootRouteImport

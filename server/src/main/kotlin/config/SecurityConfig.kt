@@ -17,10 +17,12 @@ data class SecurityConfig(
 
     companion object {
         fun fromEnvironment(application: Application): SecurityConfig {
-            val jwtSecret = application.environment.config.property("jwt.secret").getString()
-            val jwtIssuer = application.environment.config.property("jwt.issuer").getString()
-            val jwtAudience = application.environment.config.property("jwt.audience").getString()
-            val jwtRealm = application.environment.config.property("jwt.realm").getString()
+            val config = application.environment.config
+            val jwtSecret = System.getenv("JWT_SECRET")
+                ?: config.property("jwt.secret").getString()
+            val jwtIssuer = config.property("jwt.issuer").getString()
+            val jwtAudience = config.property("jwt.audience").getString()
+            val jwtRealm = config.property("jwt.realm").getString()
 
             return SecurityConfig(
                 jwtSecret = jwtSecret,

@@ -7,7 +7,6 @@ import { useHotkeys } from "react-hotkeys-hook";
 import { toast } from "sonner";
 import { useMediaQuery } from "usehooks-ts";
 import z from "zod";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import type { bookmarkPostRequest } from "@/data/bookmarks";
 import { BACKEND_URL } from "@/hooks/useAuth";
@@ -48,10 +47,9 @@ function AddBookmarkMenu() {
 	const addBookmarkMutation = useMutation({
 		mutationFn: addBookmark,
 		onSuccess: async () => {
-			// Invalidate and refetch bookmarks query
 			queryClient.invalidateQueries({ queryKey: ["bookmarks"] });
 			toast.dismiss("add-bookmark");
-			toast.success("Bookmark added successfully");
+			toast.success("Bookmark added");
 			form.reset();
 			setAdvanced(false);
 		},
@@ -77,7 +75,6 @@ function AddBookmarkMenu() {
 		},
 	});
 
-	// Focus on URL input
 	useHotkeys(
 		"ctrl+k, meta+k",
 		() => {
@@ -86,7 +83,6 @@ function AddBookmarkMenu() {
 		{ preventDefault: true },
 	);
 
-	// Submit form
 	useHotkeys(
 		"ctrl+enter, meta+enter",
 		() => {
@@ -104,15 +100,15 @@ function AddBookmarkMenu() {
 				e.stopPropagation();
 				form.handleSubmit();
 			}}
-			className="flex flex-col gap-2 max-w-7xl mx-auto px-4 md:p-0 mb-4"
+			className="flex flex-col gap-2 max-w-7xl mx-auto px-4 md:px-0 mb-5"
 		>
-			<div className="flex gap-2">
-				<div className="flex gap-2 relative w-full">
+			<div className="flex gap-2 items-start">
+				<div className="flex-1 relative">
 					<form.Field
 						name="url"
 						validators={{
 							onChange: ({ value }) => {
-								if (!value) return; // Don't show error for empty field
+								if (!value) return;
 								const urlRegex =
 									/^(https?:\/\/)?([\w-]+\.)+[\w-]+(:\d+)?(\/\S*)?$/i;
 								if (!urlRegex.test(value)) {
@@ -122,38 +118,38 @@ function AddBookmarkMenu() {
 						}}
 					>
 						{(field) => (
-							<div className="w-full">
-								<div className="relative">
+							<div>
+								<div className="relative flex items-center">
 									<Input
 										type="text"
-										placeholder="URL"
-										className={`w-full text-sm ${field.state.meta.errors.length > 0 ? "border-red-500" : ""}`}
+										placeholder="Paste a URL to bookmark..."
+										className={`w-full text-xs h-8 pr-20 font-mono ${field.state.meta.errors.length > 0 ? "border-destructive/60" : ""}`}
 										required
 										value={field.state.value}
 										onBlur={field.handleBlur}
 										onChange={(e) => field.handleChange(e.target.value)}
 										ref={urlInputRef}
 									/>
-									<Button
+									<div className="absolute right-8 flex items-center gap-1 pointer-events-none">
+										<kbd className="hidden sm:inline-flex h-4 items-center gap-0.5 rounded-[3px] bg-foreground/[0.07] border border-foreground/[0.1] px-1 text-[9px] text-muted-foreground/60 font-mono">
+											⌘K
+										</kbd>
+									</div>
+									<button
 										type="button"
-										variant="ghost"
-										size="sm"
-										className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
 										onClick={() => setAdvanced((prev) => !prev)}
+										className="absolute right-2 w-5 h-5 flex items-center justify-center text-muted-foreground/50 hover:text-muted-foreground transition-colors"
 									>
 										<motion.div
 											animate={{ rotate: advanced ? 180 : 0 }}
-											transition={{ duration: 0.1, ease: "easeInOut" }}
+											transition={{ duration: 0.15, ease: "easeInOut" }}
 										>
-											<ChevronDown className="h-4 w-4" aria-hidden="true" />
+											<ChevronDown className="h-3.5 w-3.5" />
 										</motion.div>
-										<span className="sr-only">
-											{advanced ? "Hide advanced" : "Show advanced"}
-										</span>
-									</Button>
+									</button>
 								</div>
 								{field.state.meta.errors.length > 0 && (
-									<p className="text-red-500 text-xs mt-1">
+									<p className="text-destructive text-[10px] mt-1 font-mono">
 										{typeof field.state.meta.errors[0] === "string"
 											? field.state.meta.errors[0]
 											: field.state.meta.errors[0]?.message || "Invalid URL"}
@@ -163,34 +159,35 @@ function AddBookmarkMenu() {
 						)}
 					</form.Field>
 				</div>
-				<Button
-					variant="outline"
-					size="icon"
+
+				<button
 					type="submit"
 					disabled={addBookmarkMutation.isPending}
+					className="h-8 w-8 shrink-0 flex items-center justify-center rounded-sm border border-border bg-background text-muted-foreground hover:text-foreground hover:border-border/80 hover:bg-foreground/[0.04] transition-all duration-150 disabled:opacity-40"
 				>
-					<Plus className="w-4 h-4" />
-				</Button>
+					<Plus className="w-3.5 h-3.5" />
+				</button>
 			</div>
+
 			<AnimatePresence>
 				{advanced && (
 					<motion.div
 						className="flex gap-2 overflow-hidden flex-col md:flex-row"
-						initial={{ height: 0, opacity: 0, y: -20 }}
+						initial={{ height: 0, opacity: 0, y: -8 }}
 						animate={{ height: "auto", opacity: 1, y: 0 }}
-						exit={{ height: 0, opacity: 0, y: -20 }}
+						exit={{ height: 0, opacity: 0, y: -8 }}
 						transition={{
-							height: { duration: 0.2 },
-							opacity: { duration: 0.2 },
-							y: { duration: 0.2 },
+							height: { duration: 0.18 },
+							opacity: { duration: 0.18 },
+							y: { duration: 0.18 },
 						}}
 					>
 						<form.Field name="title">
 							{(field) => (
 								<Input
 									type="text"
-									placeholder="Title"
-									className="w-full text-sm"
+									placeholder="Title (optional)"
+									className="w-full text-xs h-8 font-mono"
 									value={field.state.value}
 									onBlur={field.handleBlur}
 									onChange={(e) => field.handleChange(e.target.value)}
@@ -202,8 +199,8 @@ function AddBookmarkMenu() {
 								{(field) => (
 									<Input
 										type="text"
-										placeholder="Description"
-										className="w-full text-sm"
+										placeholder="Description (optional)"
+										className="w-full text-xs h-8 font-mono"
 										value={field.state.value}
 										onBlur={field.handleBlur}
 										onChange={(e) => field.handleChange(e.target.value)}
@@ -214,8 +211,8 @@ function AddBookmarkMenu() {
 							<form.Field name="description">
 								{(field) => (
 									<Textarea
-										placeholder="Description"
-										className="w-full text-sm max-h-48"
+										placeholder="Description (optional)"
+										className="w-full text-xs font-mono max-h-32"
 										value={field.state.value}
 										onBlur={field.handleBlur}
 										onChange={(e) => field.handleChange(e.target.value)}

@@ -5,12 +5,10 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/ui/password-input";
 import { useAuth } from "../hooks/useAuth";
-import logo from "../logo.svg";
 
 export const Route = createFileRoute("/signup")({
   component: SignupForm,
@@ -55,7 +53,7 @@ function SignupForm() {
 
       try {
         await signup(value.email, value.password);
-        toast.success("Signup successful!");
+        toast.success("Account created. Welcome to bookmarkr.");
         navigate({ to: "/" });
       } catch (error) {
         const errorMessage =
@@ -69,117 +67,140 @@ function SignupForm() {
   });
 
   return (
-    <div className="flex items-center justify-center flex-1 bg-gradient-to-b from-background to-secondary p-4 text-foreground">
-      <div className="p-8 rounded-md backdrop-blur-md bg-background border-1 border-foreground/10 flex flex-col gap-4 w-sm">
-        <div className="flex justify-center">
-          <img src={logo} alt="logo" className="w-32 h-32" />
+    <div className="flex-1 flex items-center justify-center relative overflow-hidden px-4 py-16">
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage: `radial-gradient(circle at 50% 30%, oklch(0.637 0.185 259 / 0.05) 0%, transparent 60%)`,
+        }}
+      />
+
+      <div className="relative w-full max-w-sm">
+        <div className="mb-8 text-center">
+          <div className="inline-flex w-10 h-10 bg-primary rounded-md items-center justify-center text-lg font-bold text-primary-foreground font-mono mb-4">
+            B
+          </div>
+          <h1 className="font-display text-2xl text-foreground tracking-tight">
+            Create account
+          </h1>
+          <p className="text-xs text-muted-foreground mt-1 font-mono">
+            Start organizing your bookmarks
+          </p>
         </div>
 
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleSubmit();
-          }}
-          className="space-y-6"
-        >
-          <Field name="email">
-            {({ state, handleChange, handleBlur }) => (
-              <div className="flex flex-col gap-2">
-                <Label className="text-lg font-medium">Email</Label>
-                <Input
-                  defaultValue={state.value}
-                  onChange={(e) => handleChange(e.target.value)}
-                  onBlur={handleBlur}
-                  placeholder="Enter your email"
-                  required
-                />
-                {!state.meta.isValid && (
-                  <Alert variant="destructive" className="rounded-md p-2">
-                    <AlertDescription>
-                      {state.meta.errors[0]?.message}
-                    </AlertDescription>
-                  </Alert>
-                )}
+        <div className="rounded-sm border border-border bg-card p-6">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleSubmit();
+            }}
+            className="flex flex-col gap-5"
+          >
+            <Field name="email">
+              {({ state, handleChange, handleBlur }) => (
+                <div className="flex flex-col gap-1.5">
+                  <Label className="text-xs font-medium text-muted-foreground">
+                    Email
+                  </Label>
+                  <Input
+                    defaultValue={state.value}
+                    onChange={(e) => handleChange(e.target.value)}
+                    onBlur={handleBlur}
+                    placeholder="you@example.com"
+                    className="h-8 text-xs font-mono"
+                    required
+                  />
+                  {!state.meta.isValid && (
+                    <Alert variant="destructive" className="rounded-sm p-2">
+                      <AlertDescription className="text-xs">
+                        {state.meta.errors[0]?.message}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </div>
+              )}
+            </Field>
+
+            <Field name="password">
+              {({ state, handleChange, handleBlur }) => (
+                <div className="flex flex-col gap-1.5">
+                  <Label className="text-xs font-medium text-muted-foreground">
+                    Password
+                  </Label>
+                  <PasswordInput
+                    defaultValue={state.value}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      handleChange(e.target.value)
+                    }
+                    onBlur={handleBlur}
+                    placeholder="Min. 8 characters"
+                    className="h-8 text-xs font-mono"
+                    required
+                  />
+                  {!state.meta.isValid && (
+                    <Alert variant="destructive" className="rounded-sm p-2">
+                      <AlertDescription className="text-xs">
+                        {state.meta.errors[0]?.message}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </div>
+              )}
+            </Field>
+
+            <Field name="confirmPassword">
+              {({ state, handleChange, handleBlur }) => (
+                <div className="flex flex-col gap-1.5">
+                  <Label className="text-xs font-medium text-muted-foreground">
+                    Confirm password
+                  </Label>
+                  <PasswordInput
+                    defaultValue={state.value}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      handleChange(e.target.value)
+                    }
+                    onBlur={handleBlur}
+                    placeholder="••••••••"
+                    className="h-8 text-xs font-mono"
+                    required
+                  />
+                  {!state.meta.isValid && (
+                    <Alert variant="destructive" className="rounded-sm p-2">
+                      <AlertDescription className="text-xs">
+                        {state.meta.errors[0]?.message}
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </div>
+              )}
+            </Field>
+
+            {formError && (
+              <div className="flex items-center gap-2 p-2.5 text-xs text-destructive bg-destructive/[0.08] border border-destructive/20 rounded-sm font-mono">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                {formError}
               </div>
             )}
-          </Field>
 
-          <Field name="password">
-            {({ state, handleChange, handleBlur }) => (
-              <div className="flex flex-col gap-2">
-                <Label className="text-lg font-medium">Password</Label>
-                <PasswordInput
-                  defaultValue={state.value}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    handleChange(e.target.value)
-                  }
-                  onBlur={handleBlur}
-                  placeholder="Enter your password"
-                  required
-                />
-                {!state.meta.isValid && (
-                  <Alert variant="destructive" className="rounded-md p-2">
-                    <AlertDescription>
-                      {state.meta.errors[0]?.message}
-                    </AlertDescription>
-                  </Alert>
-                )}
-              </div>
-            )}
-          </Field>
-
-          <Field name="confirmPassword">
-            {({ state, handleChange, handleBlur }) => (
-              <div className="flex flex-col gap-2">
-                <Label className="text-lg font-medium">Confirm Password</Label>
-                <PasswordInput
-                  defaultValue={state.value}
-                  onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                    handleChange(e.target.value)
-                  }
-                  onBlur={handleBlur}
-                  placeholder="Confirm your password"
-                  required
-                />
-                {!state.meta.isValid && (
-                  <Alert variant="destructive" className="rounded-md p-2">
-                    <AlertDescription>
-                      {state.meta.errors[0]?.message}
-                    </AlertDescription>
-                  </Alert>
-                )}
-              </div>
-            )}
-          </Field>
-
-          {formError && (
-            <div className="flex items-center gap-2 p-3 text-sm text-red-500 bg-red-500/10 border border-red-500/20 rounded-md">
-              <AlertCircle className="w-4 h-4 flex-shrink-0" />
-              <span>{formError}</span>
-            </div>
-          )}
-
-          <div className="flex justify-end">
-            <Button
+            <button
               type="submit"
-              className="w-full hover:cursor-pointer"
               disabled={isLoading}
+              className="h-8 w-full flex items-center justify-center text-xs font-medium bg-primary text-primary-foreground rounded-sm hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-1"
             >
-              {isLoading ? "Signing up..." : "Sign up"}
-            </Button>
-          </div>
-        </form>
-        <div className="flex flex-col gap-2 mt-4 tracking-tight">
-          <div className="flex text-xs text-foreground/30 justify-between">
-            <p>Already have an account?</p>
-            <Link
-              to="/login"
-              className="text-foreground/50 flex gap-2 items-center hover:text-foreground/70 transition duration-300"
-            >
-              Log in <ArrowRight className="w-3 h-3" />
-            </Link>
-          </div>
+              {isLoading ? "Creating account..." : "Create account"}
+            </button>
+          </form>
+        </div>
+
+        <div className="mt-4 flex items-center justify-between text-xs font-mono px-0.5">
+          <span className="text-muted-foreground/50">Already have one?</span>
+          <Link
+            to="/login"
+            className="flex items-center gap-1 text-muted-foreground hover:text-foreground transition-colors"
+          >
+            Sign in <ArrowRight className="w-3 h-3" />
+          </Link>
         </div>
       </div>
     </div>

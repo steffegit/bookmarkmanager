@@ -26,14 +26,14 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     </ThemeProvider>
   ),
   notFoundComponent: () => (
-    <div
-      className="flex flex-col items-center justify-center gap-6 flex-1
-      bg-gradient-to-b from-background via-background to-secondary p-8"
-    >
-      <div className="text-9xl font-extralight">404</div>
-      <div className="max-w-lg text-center tracking-tighter font-medium">
-        <p>We couldn't find the page you were looking for.</p>
-        <p>If you think this is an error, you can let us know.</p>
+    <div className="flex flex-col items-center justify-center gap-4 flex-1 p-8">
+      <div className="font-display text-8xl font-bold text-foreground/10 select-none">
+        404
+      </div>
+      <div className="text-center">
+        <p className="text-sm text-muted-foreground font-mono">
+          Page not found.
+        </p>
       </div>
     </div>
   ),

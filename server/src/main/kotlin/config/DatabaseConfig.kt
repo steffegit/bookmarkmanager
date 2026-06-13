@@ -17,9 +17,12 @@ data class DatabaseConfig(
     companion object {
         fun fromConfig(application: Application): DatabaseConfig {
             val config = application.environment.config
-            val url = config.property("storage.jdbcURL").getString()
-            val user = config.property("storage.user").getString()
-            val password = config.property("storage.password").getString()
+            val url = System.getenv("JDBC_URL")
+                ?: config.property("storage.jdbcURL").getString()
+            val user = System.getenv("DB_USER")
+                ?: config.property("storage.user").getString()
+            val password = System.getenv("DB_PASSWORD")
+                ?: config.property("storage.password").getString()
             val driver = config.property("storage.driverClassName").getString()
 
             return DatabaseConfig(

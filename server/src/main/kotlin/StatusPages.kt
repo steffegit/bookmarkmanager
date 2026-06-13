@@ -108,7 +108,8 @@ fun Application.configureStatusPages() {
 
         // Catch-all exception
 
-        exception<Throwable> { call, _ ->
+        exception<Throwable> { call, cause ->
+            call.application.environment.log.error("Unhandled exception on ${call.request.local.method.value} ${call.request.local.uri}", cause)
             call.respond(
                 HttpStatusCode.InternalServerError,
                 mapOf("message" to "Internal server error")

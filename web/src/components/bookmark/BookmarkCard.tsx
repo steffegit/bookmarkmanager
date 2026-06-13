@@ -1,20 +1,7 @@
 import { ExternalLink } from "lucide-react";
 import { useState } from "react";
-import {
-	Tooltip,
-	TooltipContent,
-	TooltipProvider,
-	TooltipTrigger,
-} from "@/components/ui/tooltip";
 import type { Bookmark } from "@/data/bookmarks";
 import { extractDomain } from "@/lib/utils";
-import {
-	Card,
-	CardContent,
-	CardFooter,
-	CardHeader,
-	CardTitle,
-} from "../ui/card";
 import BookmarkDeleteAlertDialog from "./BookmarkDeleteAlertDialog";
 import BookmarkDropdown from "./BookmarkDropdown";
 import BookmarkEditDialog from "./BookmarkEditDialog";
@@ -22,92 +9,85 @@ import BookmarkEditDialog from "./BookmarkEditDialog";
 export function BookmarkCard({ bookmark }: { bookmark: Bookmark }) {
 	const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-
-	const handleEdit = () => {
-		setIsEditDialogOpen(true);
-	};
-
-	const handleDelete = () => {
-		setIsDeleteDialogOpen(true);
-	};
+	const [faviconError, setFaviconError] = useState(false);
 
 	const domain = extractDomain(bookmark.url);
 
 	return (
-		<Card className="border-accent-foreground/10 rounded-md p-0 gap-1 overflow-hidden">
-			<CardHeader className="p-0 w-full">
-				{/* TODO: Add dominant color as background here or some sort of contrast */}
-				<a
-					href={bookmark.url}
-					target="_blank"
-					rel="noopener noreferrer"
-					className="flex justify-center items-center bg-gray-100 w-full hover:cursor-pointer"
-				>
+		<div className="group flex flex-col rounded-sm border border-border bg-card overflow-hidden hover:border-primary/25 transition-all duration-200 hover:shadow-md">
+			<a
+				href={bookmark.url}
+				target="_blank"
+				rel="noopener noreferrer"
+				className="block overflow-hidden"
+			>
+				<div className="relative w-full aspect-video bg-muted overflow-hidden">
 					{bookmark.ogImageUrl && bookmark.ogImageUrl !== "" ? (
 						<img
 							src={bookmark.ogImageUrl}
 							alt=""
-							className="w-86 h-40 object-contain drop-shadow-lg"
+							className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
 						/>
 					) : (
-						<div className="w-full min-h-40 flex items-center justify-center bg-gradient-to-bl from-white to-secondary">
-							{domain ? (
+						<div className="w-full h-full flex items-center justify-center">
+							{domain && !faviconError ? (
 								<img
 									src={`https://${domain}/favicon.ico`}
 									alt=""
-									className="w-20 h-20 object-contain drop-shadow-lg"
+									className="w-8 h-8 object-contain opacity-40"
+									onError={() => setFaviconError(true)}
 								/>
 							) : (
-								<div className="w-20 h-20" />
+								<div className="w-8 h-8 rounded-sm bg-border/60 flex items-center justify-center">
+									<ExternalLink className="w-3.5 h-3.5 text-muted-foreground/40" />
+								</div>
 							)}
 						</div>
 					)}
-				</a>
-			</CardHeader>
-			<CardContent className="px-2 flex-1">
-				<div className="flex flex-col gap-1">
-					<div className="flex items-start gap-2">
-						<TooltipProvider>
-							<Tooltip delayDuration={500}>
-								<TooltipTrigger asChild>
-									<a
-										href={bookmark.url}
-										target="_blank"
-										rel="noopener noreferrer"
-										className="min-w-0 flex-1"
-									>
-										<CardTitle className="text-sm line-clamp-2 font-bold tracking-tighter hover:text-primary transition-colors text-ellipsis overflow-hidden">
-											{bookmark.title}
-										</CardTitle>
-									</a>
-								</TooltipTrigger>
-								<TooltipContent className="max-w-xs p-2 rounded-md bg-secondary border border-accent-foreground/10 text-foreground shadow-sm">
-									<p className="text-xs tracking-tighter">{bookmark.title}</p>
-								</TooltipContent>
-							</Tooltip>
-						</TooltipProvider>
+					<div className="absolute inset-0 bg-gradient-to-t from-background/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+				</div>
+			</a>
+
+			<div className="flex flex-col gap-1.5 p-3 flex-1">
+				<div className="flex items-start gap-1.5">
+					<a
+						href={bookmark.url}
+						target="_blank"
+						rel="noopener noreferrer"
+						className="flex-1 min-w-0"
+					>
+						<h3 className="text-xs font-medium line-clamp-2 text-foreground hover:text-primary transition-colors duration-150 leading-snug tracking-tight">
+							{bookmark.title}
+						</h3>
+					</a>
+					<div className="shrink-0 -mt-0.5 -mr-0.5 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
 						<BookmarkDropdown
 							bookmark={bookmark}
-							onEdit={handleEdit}
-							onDelete={handleDelete}
+							onEdit={() => setIsEditDialogOpen(true)}
+							onDelete={() => setIsDeleteDialogOpen(true)}
 						/>
 					</div>
-					<p className="tracking-tighter text-sm font-light line-clamp-3">
+				</div>
+
+				{bookmark.description && (
+					<p className="text-[11px] text-muted-foreground/70 line-clamp-2 leading-relaxed tracking-tight">
 						{bookmark.description}
 					</p>
+				)}
+
+				<div className="mt-auto pt-1.5">
+					<a
+						href={bookmark.url}
+						target="_blank"
+						rel="noopener noreferrer"
+						className="inline-flex items-center gap-1 text-[10px] text-muted-foreground/40 hover:text-muted-foreground/70 transition-colors duration-150 font-mono tracking-tight"
+					>
+						{domain}
+						<ExternalLink className="w-2.5 h-2.5" />
+					</a>
 				</div>
-			</CardContent>
-			<CardFooter className="px-2 pb-2">
-				<a
-					href={bookmark.url}
-					target="_blank"
-					rel="noopener noreferrer"
-					className="text-xs text-muted-foreground/40 hover:text-muted-foreground/60 tracking-tighter flex gap-1 items-center"
-				>
-					{domain}
-					<ExternalLink className="w-3 h-3 opacity-60" />
-				</a>
-			</CardFooter>
+			</div>
+
 			<BookmarkEditDialog
 				open={isEditDialogOpen}
 				setOpen={setIsEditDialogOpen}
@@ -118,6 +98,6 @@ export function BookmarkCard({ bookmark }: { bookmark: Bookmark }) {
 				setOpen={setIsDeleteDialogOpen}
 				bookmark={bookmark}
 			/>
-		</Card>
+		</div>
 	);
 }

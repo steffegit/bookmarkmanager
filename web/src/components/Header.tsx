@@ -1,267 +1,258 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Download, Github, LogIn, LogOut, Menu, User } from "lucide-react";
 import { useState } from "react";
+import { useHotkeys } from "react-hotkeys-hook";
 import { toast } from "sonner";
 import { useMediaQuery } from "usehooks-ts";
 import { Separator } from "@/components/ui/separator";
 import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetTitle,
-  SheetTrigger,
+	Sheet,
+	SheetContent,
+	SheetDescription,
+	SheetTitle,
+	SheetTrigger,
 } from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "./theme-provider";
-import { Button } from "./ui/button";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 
 const navLinks = [
-  {
-    label: "Dashboard",
-    to: "/",
-  },
-  {
-    label: "Collections",
-    to: "/collections",
-  },
-  {
-    label: "Settings",
-    to: "/settings",
-  },
+	{ label: "Dashboard", to: "/" },
+	{ label: "Collections", to: "/collections" },
+	{ label: "Settings", to: "/settings" },
 ];
 
+function KbdBadge({
+	children,
+	variant = "default",
+}: { children: React.ReactNode; variant?: "default" | "primary" }) {
+	if (variant === "primary") {
+		return (
+			<kbd className="ml-1.5 inline-flex h-[16px] min-w-[16px] items-center justify-center rounded-[3px] bg-white/20 border border-white/30 px-[3px] text-[9px] font-medium text-white/80 leading-none tracking-normal">
+				{children}
+			</kbd>
+		);
+	}
+	return (
+		<kbd className="ml-1.5 inline-flex h-[16px] min-w-[16px] items-center justify-center rounded-[3px] bg-foreground/[0.12] border border-foreground/[0.22] px-[3px] text-[9px] font-medium text-foreground/70 leading-none tracking-normal">
+			{children}
+		</kbd>
+	);
+}
+
+function LogoMark() {
+	return (
+		<div className="flex items-center gap-2 select-none">
+			<div className="w-6 h-6 bg-primary rounded-[4px] flex items-center justify-center text-[11px] font-bold text-primary-foreground font-mono leading-none">
+				B
+			</div>
+			<span className="text-sm font-semibold tracking-tight text-foreground">
+				bookmarkr
+			</span>
+		</div>
+	);
+}
+
 const exportBookmarks = () => {
-  console.log("exporting bookmarks coming soon...");
-  toast.info("Exporting bookmarks coming soon...");
+	toast.info("Exporting bookmarks coming soon...");
 };
 
 export default function Header() {
-  const { theme, setTheme } = useTheme();
+	const { theme, setTheme } = useTheme();
+	const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
 
-  const toggleTheme = () => {
-    const newTheme = theme === "dark" ? "light" : "dark";
-    setTheme(newTheme);
-  };
+	const { isAuthenticated } = useAuth();
+	const navigate = useNavigate();
+	const [isMenuOpen, setIsMenuOpen] = useState(false);
+	const isDesktop = useMediaQuery("(min-width: 768px)");
 
-  const { isAuthenticated } = useAuth();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+	useHotkeys("l", () => navigate({ to: "/login" }), {
+		enabled: !isAuthenticated,
+		preventDefault: true,
+	});
 
-  const isDesktop = useMediaQuery("(min-width: 768px)");
+	if (isDesktop)
+		return (
+			<header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/80 backdrop-blur-xl">
+				<nav className="flex justify-between items-center max-w-7xl mx-auto px-4 h-11">
+					<div className="flex items-center gap-1">
+						<Link to="/" className="mr-3">
+							<LogoMark />
+						</Link>
+						{navLinks.map((link) => (
+							<Link
+								key={link.to}
+								to={link.to}
+								className="px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground transition-colors duration-150 rounded-sm hover:bg-foreground/[0.06]"
+							>
+								{link.label}
+							</Link>
+						))}
+					</div>
 
-  if (isDesktop)
-    return (
-      <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur-md py-1 px-2 border-b-1 border-accent-foreground/10 mb-4">
-        <nav className="flex justify-between items-center max-w-7xl mx-auto">
-          <div className="flex gap-2 items-center">
-            <img
-              src="https://placehold.co/400"
-              alt="Logo"
-              className="w-8 h-8 rounded-md hover:scale-105 transition-transform duration-200"
-            />
-            {navLinks.map((link) => (
-              <Button
-                variant="ghost"
-                size="sm"
-                key={link.to}
-                className="px-2 tracking-tight"
-              >
-                <Link to={link.to}>{link.label}</Link>
-              </Button>
-            ))}
-          </div>
-          <div className="flex gap-2 items-center tracking-tight">
-            <a
-              href="https://github.com/steffegit/bookmarkmanager"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-full hover:cursor-pointer"
-              >
-                <Github />
-              </Button>
-            </a>
-            {!isAuthenticated && (
-              <Button
-                variant="outline"
-                size="xs"
-                className="hover:cursor-pointer"
-              >
-                <Link to="/login" className="flex items-center gap-2">
-                  <LogIn className="scale-80" />
-                  Log In
-                </Link>
-              </Button>
-            )}
-            <Button
-              variant="default"
-              size="xs"
-              disabled
-              className="hover:cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-              onClick={() => {
-                exportBookmarks();
-              }}
-            >
-              <Download className="scale-80" />
-              Export
-            </Button>
-            {isAuthenticated && (
-              <>
-                <Button
-                  variant="outline"
-                  size="xs"
-                  className="hover:cursor-pointer"
-                >
-                  <Link to="/logout" className="flex items-center gap-2">
-                    <LogOut className="scale-80" />
-                    Log Out
-                  </Link>
-                </Button>
-                <Button
-                  variant="outline"
-                  size="icon"
-                  className="hover:cursor-pointer rounded-full scale-80 -ml-1"
-                >
-                  <Link to="/profile" className="flex items-center">
-                    <User />
-                  </Link>
-                </Button>
-              </>
-            )}
-          </div>
-        </nav>
-      </header>
-    );
+					<div className="flex items-center gap-1">
+						<a
+							href="https://github.com/steffegit/bookmarkmanager"
+							target="_blank"
+							rel="noopener noreferrer"
+							className="w-7 h-7 flex items-center justify-center rounded-sm text-muted-foreground hover:text-foreground hover:bg-foreground/[0.06] transition-colors"
+						>
+							<Github className="w-3.5 h-3.5" />
+						</a>
 
-  // Mobile view with top sheet
-  return (
-    <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur-md py-2 px-4 border-b-1 border-accent-foreground/10 mb-4">
-      <nav className="flex justify-between items-center max-w-7xl mx-auto">
-        <div className="flex gap-2 items-center">
-          <img
-            src="https://placehold.co/400"
-            alt="Logo"
-            className="w-8 h-8 rounded-md hover:scale-105 transition-transform duration-200"
-          />
-        </div>
-        <div className="flex gap-2 items-center tracking-tight">
-          <Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-            <VisuallyHidden.Root>
-              <SheetTitle>Menu</SheetTitle>
-              <SheetDescription>
-                Menu for the bookmark manager.
-              </SheetDescription>
-            </VisuallyHidden.Root>
-            <SheetTrigger asChild>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="rounded-md hover:cursor-pointer"
-              >
-                <Menu className="h-4 w-4 scale-120" />
-              </Button>
-            </SheetTrigger>
-            <SheetContent
-              side="bottom"
-              className="border-accent-foreground/10 p-2 pb-12"
-              showClose={false}
-            >
-              <div className="flex flex-col">
-                <div className="flex flex-col gap-1">
-                  {navLinks.map((link) => (
-                    <Link
-                      key={link.to}
-                      to={link.to}
-                      className="flex items-center px-2 py-2 text-sm tracking-tight hover:bg-accent rounded-md transition-colors"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      {link.label}
-                    </Link>
-                  ))}
-                </div>
+						<div className="w-px h-4 bg-border mx-1" />
 
-                <Separator className="my-2" />
+						{!isAuthenticated && (
+							<Link to="/login">
+								<button
+									type="button"
+									className="flex items-center gap-1.5 h-7 px-2.5 text-xs text-muted-foreground hover:text-foreground border border-border hover:border-border/80 rounded-sm bg-transparent hover:bg-foreground/[0.04] transition-all duration-150"
+								>
+									<LogIn className="w-3 h-3" />
+									Log in
+									<KbdBadge>L</KbdBadge>
+								</button>
+							</Link>
+						)}
 
-                <div className="flex flex-col gap-1">
-                  {!isAuthenticated && (
-                    <Button variant="ghost" className="w-full justify-start">
-                      <Link
-                        to="/login"
-                        onClick={() => setIsMenuOpen(false)}
-                        className="flex gap-2 items-center justify-start"
-                      >
-                        <LogIn className="h-4 w-4 -ml-1" />
-                        Log In
-                      </Link>
-                    </Button>
-                  )}
+						{isAuthenticated && (
+							<>
+								<Link to="/profile">
+									<button
+										type="button"
+										className="w-7 h-7 flex items-center justify-center rounded-sm text-muted-foreground hover:text-foreground hover:bg-foreground/[0.06] transition-colors"
+									>
+										<User className="w-3.5 h-3.5" />
+									</button>
+								</Link>
+								<Link to="/logout">
+									<button
+										type="button"
+										className="w-7 h-7 flex items-center justify-center rounded-sm text-muted-foreground hover:text-foreground hover:bg-foreground/[0.06] transition-colors"
+									>
+										<LogOut className="w-3.5 h-3.5" />
+									</button>
+								</Link>
+							</>
+						)}
 
-                  <Button
-                    variant="ghost"
-                    disabled
-                    onClick={() => {
-                      exportBookmarks();
-                      setIsMenuOpen(false);
-                    }}
-                    className="w-full justify-start"
-                  >
-                    <Download className="h-4 w-4" />
-                    Export
-                  </Button>
+						<button
+							type="button"
+							disabled
+							onClick={exportBookmarks}
+							className="flex items-center gap-1.5 h-7 px-2.5 text-xs bg-primary text-primary-foreground rounded-sm hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed font-medium"
+						>
+							<Download className="w-3 h-3" />
+							Export
+							<KbdBadge variant="primary">E</KbdBadge>
+						</button>
+					</div>
+				</nav>
+			</header>
+		);
 
-                  {isAuthenticated && (
-                    <>
-                      <Button variant="ghost" className="w-full justify-start">
-                        <Link
-                          to="/profile"
-                          onClick={() => setIsMenuOpen(false)}
-                          className="flex gap-2 items-center justify-start w-full"
-                        >
-                          <User className="h-4 w-4 -ml-1" />
-                          Profile
-                        </Link>
-                      </Button>
-                      <Button variant="ghost" className="w-full justify-start">
-                        <Link
-                          to="/logout"
-                          onClick={() => setIsMenuOpen(false)}
-                          className="flex gap-2 items-center justify-start w-full"
-                        >
-                          <LogOut className="h-4 w-4 -ml-1" />
-                          Log Out
-                        </Link>
-                      </Button>
-                    </>
-                  )}
-                </div>
+	return (
+		<header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/80 backdrop-blur-xl">
+			<nav className="flex justify-between items-center max-w-7xl mx-auto px-4 h-11">
+				<Link to="/">
+					<LogoMark />
+				</Link>
 
-                <div className="my-1" />
+				<Sheet open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+					<VisuallyHidden.Root>
+						<SheetTitle>Menu</SheetTitle>
+						<SheetDescription>Navigation menu</SheetDescription>
+					</VisuallyHidden.Root>
+					<SheetTrigger asChild>
+						<button
+							type="button"
+							className="w-7 h-7 flex items-center justify-center rounded-sm text-muted-foreground hover:text-foreground hover:bg-foreground/[0.06] transition-colors"
+						>
+							<Menu className="w-4 h-4" />
+						</button>
+					</SheetTrigger>
+					<SheetContent
+						side="bottom"
+						className="border-t border-border/60 bg-background/95 backdrop-blur-xl p-0 pb-safe"
+						showClose={false}
+					>
+						<div className="flex flex-col p-3 gap-1">
+							{navLinks.map((link) => (
+								<Link
+									key={link.to}
+									to={link.to}
+									onClick={() => setIsMenuOpen(false)}
+									className="flex items-center px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-foreground/[0.05] rounded-sm transition-colors"
+								>
+									{link.label}
+								</Link>
+							))}
 
-                <div className="flex flex-col gap-1">
-                  <Button
-                    variant="outline"
-                    className="w-full tracking-tight"
-                    onClick={toggleTheme}
-                  >
-                    Toggle {theme === "dark" ? "Light" : "Dark"} Mode On
-                  </Button>
+							<Separator className="my-1 bg-border/60" />
 
-                  <Button
-                    variant="ghost"
-                    className="w-full tracking-tight"
-                    onClick={() => setIsMenuOpen(false)}
-                  >
-                    Close menu
-                  </Button>
-                </div>
-              </div>
-            </SheetContent>
-          </Sheet>
-        </div>
-      </nav>
-    </header>
-  );
+							{!isAuthenticated && (
+								<Link
+									to="/login"
+									onClick={() => setIsMenuOpen(false)}
+									className="flex items-center gap-2 px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-foreground/[0.05] rounded-sm transition-colors"
+								>
+									<LogIn className="w-3.5 h-3.5" />
+									Log in
+								</Link>
+							)}
+
+							<button
+								type="button"
+								disabled
+								onClick={() => { exportBookmarks(); setIsMenuOpen(false); }}
+								className="flex items-center gap-2 px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-foreground/[0.05] rounded-sm transition-colors text-left disabled:opacity-40"
+							>
+								<Download className="w-3.5 h-3.5" />
+								Export bookmarks
+							</button>
+
+							{isAuthenticated && (
+								<>
+									<Link
+										to="/profile"
+										onClick={() => setIsMenuOpen(false)}
+										className="flex items-center gap-2 px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-foreground/[0.05] rounded-sm transition-colors"
+									>
+										<User className="w-3.5 h-3.5" />
+										Profile
+									</Link>
+									<Link
+										to="/logout"
+										onClick={() => setIsMenuOpen(false)}
+										className="flex items-center gap-2 px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-foreground/[0.05] rounded-sm transition-colors"
+									>
+										<LogOut className="w-3.5 h-3.5" />
+										Log out
+									</Link>
+								</>
+							)}
+
+							<Separator className="my-1 bg-border/60" />
+
+							<button
+								type="button"
+								onClick={toggleTheme}
+								className="flex items-center gap-2 px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-foreground/[0.05] rounded-sm transition-colors text-left"
+							>
+								{theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+							</button>
+
+							<button
+								type="button"
+								onClick={() => setIsMenuOpen(false)}
+								className="flex items-center gap-2 px-3 py-2.5 text-sm text-muted-foreground/50 hover:text-muted-foreground hover:bg-foreground/[0.05] rounded-sm transition-colors text-left"
+							>
+								Close
+							</button>
+						</div>
+					</SheetContent>
+				</Sheet>
+			</nav>
+		</header>
+	);
 }

@@ -19,7 +19,7 @@ RUN --mount=type=cache,target=/home/gradle/.gradle,uid=1000,gid=1000 \
     gradle :server:buildFatJar --no-daemon --quiet
 
 # Stage 3: Minimal runtime image
-FROM eclipse-temurin:21-jre-alpine AS runtime
+FROM eclipse-temurin:21-jre AS runtime
 
 WORKDIR /app
 EXPOSE 8080
