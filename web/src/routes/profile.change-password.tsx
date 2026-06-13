@@ -1,18 +1,12 @@
 import { useForm } from "@tanstack/react-form";
-import {
-  createFileRoute,
-  Link,
-  useNavigate,
-} from "@tanstack/react-router";
-import { AlertCircle, ArrowLeft, Eye, EyeOff } from "lucide-react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { AlertCircle, ArrowLeft } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { z } from "zod";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PasswordInput } from "@/components/ui/password-input";
 import { useAuth } from "@/hooks/useAuth";
 
 export const Route = createFileRoute("/profile/change-password")({
@@ -37,9 +31,6 @@ function ChangePasswordRoute() {
   const navigate = useNavigate();
   const [formError, setFormError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [showOldPassword, setShowOldPassword] = useState(false);
-  const [showNewPassword, setShowNewPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const { Field, handleSubmit } = useForm({
     defaultValues: {
@@ -56,7 +47,7 @@ function ChangePasswordRoute() {
 
       try {
         await changePassword(value.oldPassword, value.newPassword);
-        toast.success("Password changed successfully!");
+        toast.success("Password changed successfully.");
         navigate({ to: "/profile" });
       } catch (error) {
         const errorMessage =
@@ -75,56 +66,59 @@ function ChangePasswordRoute() {
   }
 
   return (
-    <div className="flex items-center justify-center flex-1 p-4 text-foreground">
-      <div className="max-w-md w-full flex flex-col gap-6">
-        {/* Header */}
-        <div className="text-center flex flex-col gap-4">
-          <h1 className="text-2xl font-bold">Change Password</h1>
-          <p className="text-muted-foreground">
-            Update your account password to keep your account secure
+    <div className="flex-1 flex items-center justify-center relative overflow-hidden px-4 py-16">
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage: `radial-gradient(circle at 50% 30%, oklch(0.637 0.185 259 / 0.05) 0%, transparent 60%)`,
+        }}
+      />
+
+      <div className="relative w-full max-w-sm">
+        <div className="mb-8">
+          <Link
+            to="/profile"
+            className="inline-flex items-center gap-1.5 text-xs font-mono text-muted-foreground hover:text-foreground transition-colors mb-6"
+          >
+            <ArrowLeft className="w-3 h-3" />
+            Back to profile
+          </Link>
+          <h1 className="text-2xl text-foreground tracking-tight">
+            Change password
+          </h1>
+          <p className="text-xs text-muted-foreground mt-1 font-mono">
+            Update your account password
           </p>
         </div>
 
-        {/* Form */}
-        <Card className="p-6 border border-accent-foreground/10 rounded-lg">
+        <div className="rounded-sm border border-border bg-card p-6">
           <form
             onSubmit={(e) => {
               e.preventDefault();
               e.stopPropagation();
               handleSubmit();
             }}
-            className="flex flex-col gap-6"
+            className="flex flex-col gap-5"
           >
             <Field name="oldPassword">
               {({ state, handleChange, handleBlur }) => (
-                <div className="flex flex-col gap-2">
-                  <Label className="text-sm font-medium">
-                    Current Password
+                <div className="flex flex-col gap-1.5">
+                  <Label className="text-xs font-medium text-muted-foreground">
+                    Current password
                   </Label>
-                  <div className="relative">
-                    <Input
-                      type={showOldPassword ? "text" : "password"}
-                      value={state.value}
-                      onChange={(e) => handleChange(e.target.value)}
-                      onBlur={handleBlur}
-                      placeholder="Enter your current password"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowOldPassword(!showOldPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    >
-                      {showOldPassword ? (
-                        <EyeOff className="w-4 h-4" />
-                      ) : (
-                        <Eye className="w-4 h-4" />
-                      )}
-                    </button>
-                  </div>
+                  <PasswordInput
+                    value={state.value}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      handleChange(e.target.value)
+                    }
+                    onBlur={handleBlur}
+                    placeholder="••••••••"
+                    className="h-8 text-xs font-mono"
+                    required
+                  />
                   {!state.meta.isValid && (
-                    <Alert variant="destructive" className="rounded-md p-2">
-                      <AlertDescription>
+                    <Alert variant="destructive" className="rounded-sm p-2">
+                      <AlertDescription className="text-xs">
                         {typeof state.meta.errors[0] === "string"
                           ? state.meta.errors[0]
                           : state.meta.errors[0]?.message}
@@ -134,6 +128,8 @@ function ChangePasswordRoute() {
                 </div>
               )}
             </Field>
+
+            <div className="w-full h-px bg-border/60" />
 
             <Field
               name="newPassword"
@@ -146,32 +142,23 @@ function ChangePasswordRoute() {
               }}
             >
               {({ state, handleChange, handleBlur }) => (
-                <div className="flex flex-col gap-2">
-                  <Label className="text-sm font-medium">New Password</Label>
-                  <div className="relative">
-                    <Input
-                      type={showNewPassword ? "text" : "password"}
-                      value={state.value}
-                      onChange={(e) => handleChange(e.target.value)}
-                      onBlur={handleBlur}
-                      placeholder="Enter your new password"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowNewPassword(!showNewPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    >
-                      {showNewPassword ? (
-                        <EyeOff className="w-4 h-4" />
-                      ) : (
-                        <Eye className="w-4 h-4" />
-                      )}
-                    </button>
-                  </div>
+                <div className="flex flex-col gap-1.5">
+                  <Label className="text-xs font-medium text-muted-foreground">
+                    New password
+                  </Label>
+                  <PasswordInput
+                    value={state.value}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      handleChange(e.target.value)
+                    }
+                    onBlur={handleBlur}
+                    placeholder="••••••••"
+                    className="h-8 text-xs font-mono"
+                    required
+                  />
                   {!state.meta.isValid && (
-                    <Alert variant="destructive" className="rounded-md p-2">
-                      <AlertDescription>
+                    <Alert variant="destructive" className="rounded-sm p-2">
+                      <AlertDescription className="text-xs">
                         {typeof state.meta.errors[0] === "string"
                           ? state.meta.errors[0]
                           : state.meta.errors[0]?.message}
@@ -195,36 +182,23 @@ function ChangePasswordRoute() {
               }}
             >
               {({ state, handleChange, handleBlur }) => (
-                <div className="flex flex-col gap-2">
-                  <Label className="text-sm font-medium">
-                    Confirm New Password
+                <div className="flex flex-col gap-1.5">
+                  <Label className="text-xs font-medium text-muted-foreground">
+                    Confirm new password
                   </Label>
-                  <div className="relative">
-                    <Input
-                      type={showConfirmPassword ? "text" : "password"}
-                      value={state.value}
-                      onChange={(e) => handleChange(e.target.value)}
-                      onBlur={handleBlur}
-                      placeholder="Confirm your new password"
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setShowConfirmPassword(!showConfirmPassword)
-                      }
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    >
-                      {showConfirmPassword ? (
-                        <EyeOff className="w-4 h-4" />
-                      ) : (
-                        <Eye className="w-4 h-4" />
-                      )}
-                    </button>
-                  </div>
+                  <PasswordInput
+                    value={state.value}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      handleChange(e.target.value)
+                    }
+                    onBlur={handleBlur}
+                    placeholder="••••••••"
+                    className="h-8 text-xs font-mono"
+                    required
+                  />
                   {!state.meta.isValid && (
-                    <Alert variant="destructive" className="rounded-md p-2">
-                      <AlertDescription>
+                    <Alert variant="destructive" className="rounded-sm p-2">
+                      <AlertDescription className="text-xs">
                         {typeof state.meta.errors[0] === "string"
                           ? state.meta.errors[0]
                           : state.meta.errors[0]?.message}
@@ -236,40 +210,35 @@ function ChangePasswordRoute() {
             </Field>
 
             {formError && (
-              <div className="flex items-center gap-2 p-3 text-sm text-red-500 bg-red-500/10 border border-red-500/20 rounded-md">
-                <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                <span>{formError}</span>
+              <div className="flex items-center gap-2 p-2.5 text-xs text-destructive bg-destructive/[0.08] border border-destructive/20 rounded-sm font-mono">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0" />
+                {formError}
               </div>
             )}
 
-            <div className="flex gap-3">
+            <div className="flex gap-2 mt-1">
               <Link to="/profile" className="flex-1">
-                <Button type="button" variant="outline" className="w-full">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
+                <button
+                  type="button"
+                  className="h-8 w-full flex items-center justify-center text-xs font-medium text-muted-foreground border border-border rounded-sm hover:text-foreground hover:border-border/80 hover:bg-foreground/[0.04] transition-all"
+                >
                   Cancel
-                </Button>
+                </button>
               </Link>
-              <Button type="submit" className="flex-1" disabled={isLoading}>
-                {isLoading ? "Changing..." : "Change Password"}
-              </Button>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="flex-1 h-8 flex items-center justify-center text-xs font-medium bg-primary text-primary-foreground rounded-sm hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isLoading ? "Updating..." : "Update password"}
+              </button>
             </div>
           </form>
-        </Card>
+        </div>
 
-        {/* Security Tips */}
-        <Card className="p-4 bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800 rounded-lg">
-          <div className="text-sm flex flex-col gap-2">
-            <p className="font-medium text-blue-900 dark:text-blue-100">
-              Password Security Tips:
-            </p>
-            <ul className="text-blue-700 dark:text-blue-300 flex flex-col gap-1 list-disc list-inside text-xs">
-              <li>Use at least 8 characters</li>
-              <li>Include uppercase, lowercase, numbers, and symbols</li>
-              <li>Avoid common words or personal information</li>
-              <li>Don't reuse passwords from other accounts</li>
-            </ul>
-          </div>
-        </Card>
+        <p className="mt-4 text-xs font-mono text-muted-foreground/40 px-0.5">
+          Use at least 8 characters with a mix of letters, numbers, and symbols.
+        </p>
       </div>
     </div>
   );

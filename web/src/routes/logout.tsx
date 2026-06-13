@@ -25,8 +25,15 @@ function LogoutRoute() {
   }, [logout, navigate]);
 
   return (
-    <div className="flex flex-col items-center justify-center flex-1">
-      <p className="text-2xl font-bold">Logging out...</p>
+    <div className="flex-1 flex items-center justify-center px-4">
+      <div className="flex flex-col items-center gap-3">
+        <div className="w-8 h-8 bg-primary/10 border border-primary/20 rounded-sm flex items-center justify-center">
+          <div className="w-3 h-3 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+        </div>
+        <p className="text-xs font-mono text-muted-foreground">
+          Signing out...
+        </p>
+      </div>
     </div>
   );
 }
