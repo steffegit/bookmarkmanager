@@ -1,24 +1,29 @@
-FROM gradle:latest AS build
+# Stage 1: Download dependencies (cached as long as build files don't change)
+FROM gradle:jdk21 AS deps
 
 WORKDIR /home/gradle/src
 
-# Copy build files first for dependency caching
+COPY --chown=gradle:gradle gradle gradle
 COPY --chown=gradle:gradle build.gradle.kts settings.gradle.kts gradle.properties ./
-COPY --chown=gradle:gradle gradle ./gradle
-COPY --chown=gradle:gradle server/build.gradle.kts ./server/
+COPY --chown=gradle:gradle server/build.gradle.kts server/
 
-# Download dependencies (this layer will be cached)
-RUN gradle :server:dependencies --no-daemon
+RUN --mount=type=cache,target=/home/gradle/.gradle,uid=1000,gid=1000 \
+    gradle :server:dependencies --no-daemon --quiet
 
-# Copy source code
-COPY --chown=gradle:gradle server/src ./server/src
+# Stage 2: Build the fat JAR
+FROM deps AS build
 
-# Build the application
-RUN gradle :server:buildFatJar --no-daemon
+COPY --chown=gradle:gradle server/src server/src
 
-# Stage 2: Create the Runtime Image
-FROM amazoncorretto:24-jdk AS runtime
+RUN --mount=type=cache,target=/home/gradle/.gradle,uid=1000,gid=1000 \
+    gradle :server:buildFatJar --no-daemon --quiet
+
+# Stage 3: Minimal runtime image
+FROM eclipse-temurin:21-jre-alpine AS runtime
+
+WORKDIR /app
 EXPOSE 8080
-RUN mkdir /app
-COPY --from=build /home/gradle/src/server/build/libs/*.jar /app/bookmarkmanager.jar
-ENTRYPOINT ["java","-jar","/app/bookmarkmanager.jar"]
+
+COPY --from=build /home/gradle/src/server/build/libs/fat.jar app.jar
+
+ENTRYPOINT ["java", "-jar", "app.jar"]

@@ -64,25 +64,16 @@ class BookmarkService(private val bookmarkRepository: BookmarkRepository) {
     }
 
     private fun fetchDataFromUrl(url: String): ParsedData {
-        val doc: Document = Ksoup.parseGetRequestBlocking(url)
-
-        val title = doc.title()
-
-        // Grab the meta tag that has property="og:image" and grab the content attribute
-
-        val ogImageUrl = doc.selectFirst("meta[property=og:image]")?.attr("content") ?: ""
-
-        return ParsedData(
-            title,
-            ogImageUrl
-        )
-
-    }
-
-    private fun fetchTitleFromUrl(url: String): String? {
-        val doc: Document = Ksoup.parseGetRequestBlocking(url)
-
-        return doc.title()
+        return try {
+            val doc: Document = Ksoup.parseGetRequestBlocking(url)
+            val title = doc.title().takeIf { it.isNotBlank() }
+            val ogImageUrl = doc.selectFirst("meta[property=og:image]")
+                ?.attr("content")
+                ?.takeIf { it.isNotBlank() }
+            ParsedData(title, ogImageUrl)
+        } catch (e: Exception) {
+            ParsedData(null, null)
+        }
     }
 
 }

@@ -104,7 +104,6 @@ export function useAuth() {
     const data = await res.json();
     localStorage.setItem("auth_token", data.token);
 
-    console.log("Setting token in local storage:", data.token);
     await queryClient.invalidateQueries({ queryKey: ["auth", "verify"] });
   }
 

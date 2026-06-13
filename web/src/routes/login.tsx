@@ -29,6 +29,7 @@ function LoginForm() {
 
   if (isAuthenticated) {
     navigate({ to: "/" });
+    return null;
   }
 
   const { Field, handleSubmit } = useForm({

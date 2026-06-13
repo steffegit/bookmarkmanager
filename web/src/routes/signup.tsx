@@ -37,6 +37,7 @@ function SignupForm() {
 
   if (isAuthenticated) {
     navigate({ to: "/" });
+    return null;
   }
 
   const { Field, handleSubmit } = useForm({
@@ -53,7 +54,7 @@ function SignupForm() {
       setIsLoading(true);
 
       try {
-        await signup(value.email, value.password, value.confirmPassword);
+        await signup(value.email, value.password);
         toast.success("Signup successful!");
         navigate({ to: "/" });
       } catch (error) {

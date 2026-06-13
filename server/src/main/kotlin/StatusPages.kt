@@ -108,10 +108,10 @@ fun Application.configureStatusPages() {
 
         // Catch-all exception
 
-        exception<Throwable> { call, cause ->
+        exception<Throwable> { call, _ ->
             call.respond(
                 HttpStatusCode.InternalServerError,
-                mapOf("message" to "Internal server error: ${cause.message}")
+                mapOf("message" to "Internal server error")
             )
         }
     }

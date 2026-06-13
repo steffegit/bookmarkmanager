@@ -46,7 +46,6 @@ export default function Header() {
 
   const { isAuthenticated } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  console.log("isAuthenticated", isAuthenticated);
 
   const isDesktop = useMediaQuery("(min-width: 768px)");
 

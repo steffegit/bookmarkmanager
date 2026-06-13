@@ -71,12 +71,7 @@ fun Route.deleteBookmark() {
         val id = call.parameters.requireUUID("id")
         val userId = call.getUserIdFromJWT() ?: throw JwtPrincipalInvalidException()
 
-        val isBookmarkDeleted = bookmarkService.deleteBookmark(id, userId)
-
-        if (isBookmarkDeleted) {
-            call.respond(HttpStatusCode.NoContent, "Bookmark with ID $id successfully deleted.")
-        } else {
-            call.respond(HttpStatusCode.NotFound, "Bookmark not found or could not be deleted.")
-        }
+        bookmarkService.deleteBookmark(id, userId)
+        call.respond(HttpStatusCode.NoContent)
     }
 }

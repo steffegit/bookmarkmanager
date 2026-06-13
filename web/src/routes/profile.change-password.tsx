@@ -2,7 +2,6 @@ import { useForm } from "@tanstack/react-form";
 import {
   createFileRoute,
   Link,
-  redirect,
   useNavigate,
 } from "@tanstack/react-router";
 import { AlertCircle, ArrowLeft, Eye, EyeOff } from "lucide-react";
@@ -71,7 +70,7 @@ function ChangePasswordRoute() {
   });
 
   if (!isAuthenticated || !user) {
-    redirect({ to: "/login" });
+    navigate({ to: "/login" });
     return null;
   }
 

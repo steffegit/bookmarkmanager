@@ -18,7 +18,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import type { Bookmark } from "@/data/bookmarks";
 import { BACKEND_URL } from "@/hooks/useAuth";
-import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 
 const schema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -76,7 +75,7 @@ function BookmarkEditDialog({
     defaultValues: {
       title: bookmark.title,
       url: bookmark.url,
-      description: bookmark.description,
+      description: bookmark.description ?? "",
     },
     validators: {
       onBlur: schema,
