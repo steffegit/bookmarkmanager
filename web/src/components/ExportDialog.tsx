@@ -10,7 +10,12 @@ import {
 } from "@/components/ui/dialog";
 import { type Bookmark, fetchBookmarks } from "@/data/bookmarks";
 import { useAuth } from "@/hooks/useAuth";
-import { exportAsJSON, exportAsNetscapeHTML } from "@/lib/export";
+import { useFolders } from "@/hooks/useFolders";
+import {
+	buildFolderGroups,
+	exportAsJSON,
+	exportAsNetscapeHTML,
+} from "@/lib/export";
 
 interface ExportDialogProps {
 	open: boolean;
@@ -26,19 +31,22 @@ export function ExportDialog({ open, setOpen }: ExportDialogProps) {
 		enabled: isAuthenticated,
 	});
 
+	const { folders, assignments } = useFolders();
+
 	function handleExport(format: "json" | "html") {
 		const list: Bookmark[] = bookmarks ?? [];
 		if (list.length === 0) {
 			toast.error("No bookmarks to export");
 			return;
 		}
+		const groups = buildFolderGroups(list, folders, assignments);
 		if (format === "json") {
-			exportAsJSON(list);
+			exportAsJSON(groups);
 		} else {
-			exportAsNetscapeHTML(list);
+			exportAsNetscapeHTML(groups);
 		}
 		toast.success(
-			`Exported ${list.length} bookmark${list.length === 1 ? "" : "s"}`,
+			`Exported ${list.length} bookmark${list.length === 1 ? "" : "s"} in ${groups.length} folder${groups.length === 1 ? "" : "s"}`,
 		);
 		setOpen(false);
 	}

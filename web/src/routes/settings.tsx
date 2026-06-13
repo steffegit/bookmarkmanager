@@ -3,14 +3,18 @@ import {
 	Download,
 	Grid2X2,
 	Grid3X3,
+	KeyRound,
 	LayoutGrid,
 	LayoutList,
+	LogOut,
 	Monitor,
 	Moon,
 	Sun,
+	Upload,
 } from "lucide-react";
 import { useState } from "react";
 import { ExportDialog } from "@/components/ExportDialog";
+import { ImportDialog } from "@/components/ImportDialog";
 import { useTheme } from "@/components/theme-provider";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -100,6 +104,7 @@ function SettingsPage() {
 	const { theme, setTheme } = useTheme();
 	const { isAuthenticated } = useAuth();
 	const [isExportOpen, setIsExportOpen] = useState(false);
+	const [isImportOpen, setIsImportOpen] = useState(false);
 
 	return (
 		<div className="flex-1 flex justify-center px-4 py-12">
@@ -160,7 +165,7 @@ function SettingsPage() {
 				<Section title="Layout">
 					<SettingRow
 						label="View mode"
-						description="How bookmarks are displayed on the dashboard"
+						description="How bookmarks are displayed on the bookmarks page"
 					>
 						<SegmentedControl<ViewMode>
 							value={settings.viewMode}
@@ -257,6 +262,24 @@ function SettingsPage() {
 						<button
 							type="button"
 							className="flex items-center justify-between px-3 py-3 rounded-sm border border-border bg-card hover:border-primary/25 hover:bg-card/60 transition-all duration-150 group w-full text-left"
+							onClick={() => setIsImportOpen(true)}
+						>
+							<div className="flex items-center gap-3">
+								<Upload className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+								<div>
+									<p className="text-xs font-medium text-foreground">
+										Import bookmarks
+									</p>
+									<p className="text-[11px] text-muted-foreground/70 font-mono mt-0.5">
+										From browser HTML or a Bookmarkr JSON export
+									</p>
+								</div>
+							</div>
+						</button>
+
+						<button
+							type="button"
+							className="flex items-center justify-between px-3 py-3 rounded-sm border border-border bg-card hover:border-primary/25 hover:bg-card/60 transition-all duration-150 group w-full text-left"
 							onClick={() => setIsExportOpen(true)}
 						>
 							<div className="flex items-center gap-3">
@@ -266,11 +289,43 @@ function SettingsPage() {
 										Export bookmarks
 									</p>
 									<p className="text-[11px] text-muted-foreground/70 font-mono mt-0.5">
-										Download as JSON or browser-compatible HTML
+										Download as JSON or browser-compatible HTML, by folder
 									</p>
 								</div>
 							</div>
 						</button>
+					</Section>
+				)}
+
+				{isAuthenticated && (
+					<Section title="Account">
+						<Link
+							to="/profile/change-password"
+							className="flex items-center gap-3 px-3 py-3 rounded-sm border border-border bg-card hover:border-primary/25 hover:bg-card/60 transition-all duration-150"
+						>
+							<KeyRound className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+							<div>
+								<p className="text-xs font-medium text-foreground">
+									Change password
+								</p>
+								<p className="text-[11px] text-muted-foreground/70 font-mono mt-0.5">
+									Update your account password
+								</p>
+							</div>
+						</Link>
+
+						<Link
+							to="/logout"
+							className="flex items-center gap-3 px-3 py-3 rounded-sm border border-border bg-card hover:border-destructive/30 hover:bg-card/60 transition-all duration-150"
+						>
+							<LogOut className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
+							<div>
+								<p className="text-xs font-medium text-foreground">Sign out</p>
+								<p className="text-[11px] text-muted-foreground/70 font-mono mt-0.5">
+									End your session on this device
+								</p>
+							</div>
+						</Link>
 					</Section>
 				)}
 
@@ -283,6 +338,7 @@ function SettingsPage() {
 			</div>
 
 			<ExportDialog open={isExportOpen} setOpen={setIsExportOpen} />
+			<ImportDialog open={isImportOpen} setOpen={setIsImportOpen} />
 		</div>
 	);
 }

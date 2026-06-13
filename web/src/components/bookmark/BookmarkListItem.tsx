@@ -2,7 +2,7 @@ import { formatDistanceToNow, parseISO } from "date-fns";
 import { ExternalLink } from "lucide-react";
 import { useState } from "react";
 import type { Bookmark } from "@/data/bookmarks";
-import { extractDomain } from "@/lib/utils";
+import { extractDomain, getFaviconUrl } from "@/lib/utils";
 import BookmarkDeleteAlertDialog from "./BookmarkDeleteAlertDialog";
 import BookmarkDropdown from "./BookmarkDropdown";
 import BookmarkEditDialog from "./BookmarkEditDialog";
@@ -24,8 +24,12 @@ export function BookmarkListItem({ bookmark }: { bookmark: Bookmark }) {
 				<div className="w-5 h-5 shrink-0 flex items-center justify-center">
 					{domain && !faviconError ? (
 						<img
-							src={`https://${domain}/favicon.ico`}
+							src={getFaviconUrl(domain, 32)}
 							alt=""
+							width={16}
+							height={16}
+							loading="lazy"
+							decoding="async"
 							className="w-4 h-4 object-contain"
 							onError={() => setFaviconError(true)}
 						/>

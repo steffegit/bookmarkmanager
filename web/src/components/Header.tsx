@@ -17,8 +17,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "./theme-provider";
 
 const navLinks = [
-	{ label: "Dashboard", to: "/" },
-	{ label: "Collections", to: "/collections" },
+	{ label: "Bookmarks", to: "/" },
 	{ label: "Settings", to: "/settings" },
 ];
 

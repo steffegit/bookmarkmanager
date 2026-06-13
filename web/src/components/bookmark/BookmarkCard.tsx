@@ -1,7 +1,11 @@
 import { ExternalLink } from "lucide-react";
 import { useState } from "react";
 import type { Bookmark } from "@/data/bookmarks";
-import { extractDomain } from "@/lib/utils";
+import {
+	extractDomain,
+	getFaviconUrl,
+	getProxiedImageUrl,
+} from "@/lib/utils";
 import BookmarkDeleteAlertDialog from "./BookmarkDeleteAlertDialog";
 import BookmarkDropdown from "./BookmarkDropdown";
 import BookmarkEditDialog from "./BookmarkEditDialog";
@@ -10,11 +14,14 @@ export function BookmarkCard({ bookmark }: { bookmark: Bookmark }) {
 	const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 	const [faviconError, setFaviconError] = useState(false);
+	const [ogImageError, setOgImageError] = useState(false);
 
 	const domain = extractDomain(bookmark.url);
+	const hasOgImage =
+		!!bookmark.ogImageUrl && bookmark.ogImageUrl !== "" && !ogImageError;
 
 	return (
-		<div className="group flex flex-col rounded-sm border border-border bg-card overflow-hidden hover:border-primary/25 transition-all duration-200 hover:shadow-md">
+		<div className="group flex flex-col h-full rounded-sm border border-border bg-card overflow-hidden hover:border-primary/25 transition-all duration-200 hover:shadow-md">
 			<a
 				href={bookmark.url}
 				target="_blank"
@@ -22,18 +29,25 @@ export function BookmarkCard({ bookmark }: { bookmark: Bookmark }) {
 				className="block overflow-hidden"
 			>
 				<div className="relative w-full aspect-video bg-muted overflow-hidden">
-					{bookmark.ogImageUrl && bookmark.ogImageUrl !== "" ? (
+					{hasOgImage ? (
 						<img
-							src={bookmark.ogImageUrl}
+							src={getProxiedImageUrl(bookmark.ogImageUrl)}
 							alt=""
+							loading="lazy"
+							decoding="async"
 							className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+							onError={() => setOgImageError(true)}
 						/>
 					) : (
 						<div className="w-full h-full flex items-center justify-center">
 							{domain && !faviconError ? (
 								<img
-									src={`https://${domain}/favicon.ico`}
+									src={getFaviconUrl(domain, 64)}
 									alt=""
+									width={32}
+									height={32}
+									loading="lazy"
+									decoding="async"
 									className="w-8 h-8 object-contain opacity-40"
 									onError={() => setFaviconError(true)}
 								/>

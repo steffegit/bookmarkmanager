@@ -10,8 +10,12 @@ services:
       JDBC_URL: "jdbc:postgresql://db:5432/bookmarkmanager"
       JWT_SECRET: "jwt_secret"
       OPENROUTER_API_KEY: "${OPENROUTER_API_KEY}"
+      REDIS_HOST: "redis"
+      REDIS_PORT: "6379"
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
   db:
     container_name: bookmarkmanager-postgres
@@ -26,6 +30,16 @@ services:
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 1s
+  redis:
+    container_name: bookmarkmanager-redis
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 1s
+      timeout: 3s
+      retries: 5
   web:
     container_name: bookmarkmanager-web
     build:

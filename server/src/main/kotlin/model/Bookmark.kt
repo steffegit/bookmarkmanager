@@ -6,13 +6,17 @@ import me.atsteffe.util.LocalDateTimeSerializer
 import java.util.UUID
 import java.time.LocalDateTime
 
+@Serializable
 data class Bookmark(
+    @Serializable(with = UUIDSerializer::class)
     val id: UUID = UUID.randomUUID(),
+    @Serializable(with = UUIDSerializer::class)
     val userId: UUID,
     val url: String,
     val title: String?,
     val description: String?,
     val ogImageUrl: String?,  // Open Graph image
+    @Serializable(with = LocalDateTimeSerializer::class)
     val createdAt: LocalDateTime? = null
 //    val tags: List<String> = emptyList()
 )

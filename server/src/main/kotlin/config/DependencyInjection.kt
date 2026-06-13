@@ -6,8 +6,10 @@ import me.atsteffe.repository.JwtRepository
 import me.atsteffe.repository.UserRepository
 import me.atsteffe.service.AuthenticationService
 import me.atsteffe.service.BookmarkService
+import me.atsteffe.service.CacheService
 import me.atsteffe.service.CategorizeService
 import me.atsteffe.service.DatabaseMigrationService
+import me.atsteffe.service.ImageProxyService
 import me.atsteffe.service.JwtService
 import me.atsteffe.service.UserProfileService
 import me.atsteffe.service.UserService
@@ -16,6 +18,7 @@ import org.koin.dsl.module
 import org.koin.ktor.ext.get
 import org.koin.ktor.plugin.Koin
 import org.koin.logger.slf4jLogger
+import redis.clients.jedis.JedisPool
 
 val databaseModule = module {
     single<Database> {
@@ -34,10 +37,24 @@ val databaseModule = module {
     single { JwtRepository(get()) }
 }
 
+val cacheModule = module {
+    single {
+        val host = System.getenv("REDIS_HOST")
+        val pool = if (!host.isNullOrBlank()) {
+            val port = System.getenv("REDIS_PORT")?.toIntOrNull() ?: 6379
+            JedisPool(host, port)
+        } else {
+            null
+        }
+        CacheService(pool)
+    }
+}
+
 val serviceModule = module {
     single { UserService(get()) }
     single { UserProfileService(get()) }
-    single { BookmarkService(get()) }
+    single { BookmarkService(get(), get()) }
+    single { ImageProxyService(get()) }
     single { AuthenticationService(get()) }
     single { CategorizeService(System.getenv("OPENROUTER_API_KEY") ?: "") }
     single {
@@ -58,7 +75,7 @@ fun createConfigModule(application: Application) = module {
 fun Application.configureDependencyInjection() {
     install(Koin) {
         slf4jLogger()
-        modules(createConfigModule(this@configureDependencyInjection), databaseModule, serviceModule)
+        modules(createConfigModule(this@configureDependencyInjection), databaseModule, cacheModule, serviceModule)
     }
 
     // Run database migrations at startup

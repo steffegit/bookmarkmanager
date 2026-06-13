@@ -14,7 +14,6 @@ import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as LogoutRouteImport } from './routes/logout'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as CollectionsRouteImport } from './routes/collections'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ProfileIndexRouteImport } from './routes/profile.index'
 import { Route as ProfileChangePasswordRouteImport } from './routes/profile.change-password'
@@ -44,11 +43,6 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CollectionsRoute = CollectionsRouteImport.update({
-  id: '/collections',
-  path: '/collections',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -67,7 +61,6 @@ const ProfileChangePasswordRoute = ProfileChangePasswordRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/collections': typeof CollectionsRoute
   '/login': typeof LoginRoute
   '/logout': typeof LogoutRoute
   '/profile': typeof ProfileRouteWithChildren
@@ -78,7 +71,6 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/collections': typeof CollectionsRoute
   '/login': typeof LoginRoute
   '/logout': typeof LogoutRoute
   '/settings': typeof SettingsRoute
@@ -89,7 +81,6 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/collections': typeof CollectionsRoute
   '/login': typeof LoginRoute
   '/logout': typeof LogoutRoute
   '/profile': typeof ProfileRouteWithChildren
@@ -102,7 +93,6 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/collections'
     | '/login'
     | '/logout'
     | '/profile'
@@ -113,7 +103,6 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
-    | '/collections'
     | '/login'
     | '/logout'
     | '/settings'
@@ -123,7 +112,6 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
-    | '/collections'
     | '/login'
     | '/logout'
     | '/profile'
@@ -135,7 +123,6 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  CollectionsRoute: typeof CollectionsRoute
   LoginRoute: typeof LoginRoute
   LogoutRoute: typeof LogoutRoute
   ProfileRoute: typeof ProfileRouteWithChildren
@@ -180,13 +167,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/collections': {
-      id: '/collections'
-      path: '/collections'
-      fullPath: '/collections'
-      preLoaderRoute: typeof CollectionsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -226,7 +206,6 @@ const ProfileRouteWithChildren =
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  CollectionsRoute: CollectionsRoute,
   LoginRoute: LoginRoute,
   LogoutRoute: LogoutRoute,
   ProfileRoute: ProfileRouteWithChildren,

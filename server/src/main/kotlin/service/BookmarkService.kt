@@ -3,6 +3,8 @@ package me.atsteffe.service
 import com.fleeksoft.ksoup.Ksoup
 import com.fleeksoft.ksoup.network.parseGetRequestBlocking
 import com.fleeksoft.ksoup.nodes.Document
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.ListSerializer
 import me.atsteffe.model.Bookmark
 import me.atsteffe.command.CreateBookmarkCommand
 import me.atsteffe.command.UpdateBookmarkCommand
@@ -11,12 +13,20 @@ import me.atsteffe.util.BookmarkNotFoundException
 import me.atsteffe.util.DuplicateBookmarkUrlException
 import java.util.UUID
 
+@Serializable
 data class ParsedData(
     val title: String?,
     val ogImageURL: String?
 )
 
-class BookmarkService(private val bookmarkRepository: BookmarkRepository) {
+class BookmarkService(
+    private val bookmarkRepository: BookmarkRepository,
+    private val cache: CacheService,
+) {
+    private fun bookmarksKey(userId: UUID) = "bookmarks:user:$userId"
+
+    private fun urlMetaKey(url: String) = "urlmeta:$url"
+
     fun createBookmark(command: CreateBookmarkCommand): Bookmark {
         bookmarkRepository.findByUrl(command.url.toString(), command.userId)
             ?.let { throw DuplicateBookmarkUrlException("A bookmark with this URL already exists.") }
@@ -34,10 +44,19 @@ class BookmarkService(private val bookmarkRepository: BookmarkRepository) {
             ogImageUrl = ogImageUrl
         )
 
-        return bookmarkRepository.save(newBookmark)
+        val saved = bookmarkRepository.save(newBookmark)
+        cache.delete(bookmarksKey(command.userId))
+        return saved
     }
 
-    fun getAllBookmarks(userId: UUID) = bookmarkRepository.findAll(userId)
+    fun getAllBookmarks(userId: UUID): List<Bookmark> {
+        val key = bookmarksKey(userId)
+        cache.get(key, ListSerializer(Bookmark.serializer()))?.let { return it }
+
+        val bookmarks = bookmarkRepository.findAll(userId)
+        cache.set(key, bookmarks, ListSerializer(Bookmark.serializer()), ttlSeconds = 300)
+        return bookmarks
+    }
 
     fun updateBookmark(command: UpdateBookmarkCommand): Bookmark {
         val existingBookmark =
@@ -50,13 +69,17 @@ class BookmarkService(private val bookmarkRepository: BookmarkRepository) {
             description = command.description ?: existingBookmark.description
         )
 
-        return bookmarkRepository.save(updatedBookmark)
+        val saved = bookmarkRepository.save(updatedBookmark)
+        cache.delete(bookmarksKey(command.userId))
+        return saved
     }
 
     fun deleteBookmark(id: UUID, userId: UUID): Boolean {
         bookmarkRepository.findById(id, userId) ?: throw BookmarkNotFoundException("Bookmark with $id not found.")
 
-        return bookmarkRepository.delete(id, userId)
+        val deleted = bookmarkRepository.delete(id, userId)
+        cache.delete(bookmarksKey(userId))
+        return deleted
     }
 
     fun findById(id: UUID, userId: UUID): Bookmark? {
@@ -64,7 +87,10 @@ class BookmarkService(private val bookmarkRepository: BookmarkRepository) {
     }
 
     private fun fetchDataFromUrl(url: String): ParsedData {
-        return try {
+        val key = urlMetaKey(url)
+        cache.get(key, ParsedData.serializer())?.let { return it }
+
+        val parsed = try {
             val doc: Document = Ksoup.parseGetRequestBlocking(url)
             val title = doc.title().takeIf { it.isNotBlank() }
             val ogImageUrl = doc.selectFirst("meta[property=og:image]")
@@ -74,6 +100,10 @@ class BookmarkService(private val bookmarkRepository: BookmarkRepository) {
         } catch (e: Exception) {
             ParsedData(null, null)
         }
+
+        // Cache page metadata for 7 days to avoid re-fetching the same URL.
+        cache.set(key, parsed, ParsedData.serializer(), ttlSeconds = 7 * 24 * 3600)
+        return parsed
     }
 
 }
