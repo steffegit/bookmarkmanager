@@ -6,6 +6,7 @@ export type Bookmark = {
   title: string;
   description?: string;
   ogImageUrl: string;
+  createdAt?: string;
 };
 
 export interface bookmarkPostRequest {

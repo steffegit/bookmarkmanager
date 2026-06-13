@@ -100,7 +100,7 @@ function AddBookmarkMenu() {
 				e.stopPropagation();
 				form.handleSubmit();
 			}}
-			className="flex flex-col gap-2 max-w-7xl mx-auto px-4 md:px-0 mb-5"
+			className="flex flex-col gap-2 mb-5"
 		>
 			<div className="flex gap-2 items-start">
 				<div className="flex-1 relative">

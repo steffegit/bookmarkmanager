@@ -6,6 +6,7 @@ import me.atsteffe.repository.JwtRepository
 import me.atsteffe.repository.UserRepository
 import me.atsteffe.service.AuthenticationService
 import me.atsteffe.service.BookmarkService
+import me.atsteffe.service.CategorizeService
 import me.atsteffe.service.DatabaseMigrationService
 import me.atsteffe.service.JwtService
 import me.atsteffe.service.UserProfileService
@@ -38,6 +39,7 @@ val serviceModule = module {
     single { UserProfileService(get()) }
     single { BookmarkService(get()) }
     single { AuthenticationService(get()) }
+    single { CategorizeService(System.getenv("OPENROUTER_API_KEY") ?: "") }
     single {
         JwtService(
             get<SecurityConfig>().jwtSecret,

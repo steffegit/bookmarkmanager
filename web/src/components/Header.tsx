@@ -1,9 +1,10 @@
+import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { Download, Github, LogIn, LogOut, Menu, User } from "lucide-react";
 import { useState } from "react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { toast } from "sonner";
 import { useMediaQuery } from "usehooks-ts";
+import { ExportDialog } from "@/components/ExportDialog";
 import { Separator } from "@/components/ui/separator";
 import {
 	Sheet,
@@ -14,7 +15,6 @@ import {
 } from "@/components/ui/sheet";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "./theme-provider";
-import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 
 const navLinks = [
 	{ label: "Dashboard", to: "/" },
@@ -25,7 +25,10 @@ const navLinks = [
 function KbdBadge({
 	children,
 	variant = "default",
-}: { children: React.ReactNode; variant?: "default" | "primary" }) {
+}: {
+	children: React.ReactNode;
+	variant?: "default" | "primary";
+}) {
 	if (variant === "primary") {
 		return (
 			<kbd className="ml-1.5 inline-flex h-[16px] min-w-[16px] items-center justify-center rounded-[3px] bg-white/20 border border-white/30 px-[3px] text-[9px] font-medium text-white/80 leading-none tracking-normal">
@@ -53,10 +56,6 @@ function LogoMark() {
 	);
 }
 
-const exportBookmarks = () => {
-	toast.info("Exporting bookmarks coming soon...");
-};
-
 export default function Header() {
 	const { theme, setTheme } = useTheme();
 	const toggleTheme = () => setTheme(theme === "dark" ? "light" : "dark");
@@ -64,7 +63,19 @@ export default function Header() {
 	const { isAuthenticated } = useAuth();
 	const navigate = useNavigate();
 	const [isMenuOpen, setIsMenuOpen] = useState(false);
+	const [isExportOpen, setIsExportOpen] = useState(false);
 	const isDesktop = useMediaQuery("(min-width: 768px)");
+
+	useHotkeys(
+		"e",
+		() => {
+			if (isAuthenticated) setIsExportOpen(true);
+		},
+		{
+			enabled: isAuthenticated,
+			preventDefault: true,
+		},
+	);
 
 	useHotkeys("l", () => navigate({ to: "/login" }), {
 		enabled: !isAuthenticated,
@@ -74,7 +85,7 @@ export default function Header() {
 	if (isDesktop)
 		return (
 			<header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/80 backdrop-blur-xl">
-				<nav className="flex justify-between items-center max-w-7xl mx-auto px-4 h-11">
+				<nav className="flex justify-between items-center px-4 sm:px-6 lg:px-10 h-11">
 					<div className="flex items-center gap-1">
 						<Link to="/" className="mr-3">
 							<LogoMark />
@@ -136,24 +147,26 @@ export default function Header() {
 							</>
 						)}
 
-						<button
-							type="button"
-							disabled
-							onClick={exportBookmarks}
-							className="flex items-center gap-1.5 h-7 px-2.5 text-xs bg-primary text-primary-foreground rounded-sm hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed font-medium"
-						>
-							<Download className="w-3 h-3" />
-							Export
-							<KbdBadge variant="primary">E</KbdBadge>
-						</button>
+						{isAuthenticated && (
+							<button
+								type="button"
+								onClick={() => setIsExportOpen(true)}
+								className="flex items-center gap-1.5 h-7 px-2.5 text-xs bg-primary text-primary-foreground rounded-sm hover:bg-primary/90 transition-colors font-medium"
+							>
+								<Download className="w-3 h-3" />
+								Export
+								<KbdBadge variant="primary">E</KbdBadge>
+							</button>
+						)}
 					</div>
 				</nav>
+				<ExportDialog open={isExportOpen} setOpen={setIsExportOpen} />
 			</header>
 		);
 
 	return (
 		<header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/80 backdrop-blur-xl">
-			<nav className="flex justify-between items-center max-w-7xl mx-auto px-4 h-11">
+			<nav className="flex justify-between items-center px-4 sm:px-6 lg:px-10 h-11">
 				<Link to="/">
 					<LogoMark />
 				</Link>
@@ -201,15 +214,19 @@ export default function Header() {
 								</Link>
 							)}
 
-							<button
-								type="button"
-								disabled
-								onClick={() => { exportBookmarks(); setIsMenuOpen(false); }}
-								className="flex items-center gap-2 px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-foreground/[0.05] rounded-sm transition-colors text-left disabled:opacity-40"
-							>
-								<Download className="w-3.5 h-3.5" />
-								Export bookmarks
-							</button>
+							{isAuthenticated && (
+								<button
+									type="button"
+									onClick={() => {
+										setIsExportOpen(true);
+										setIsMenuOpen(false);
+									}}
+									className="flex items-center gap-2 px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-foreground/[0.05] rounded-sm transition-colors text-left"
+								>
+									<Download className="w-3.5 h-3.5" />
+									Export bookmarks
+								</button>
+							)}
 
 							{isAuthenticated && (
 								<>
@@ -239,7 +256,9 @@ export default function Header() {
 								onClick={toggleTheme}
 								className="flex items-center gap-2 px-3 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-foreground/[0.05] rounded-sm transition-colors text-left"
 							>
-								{theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
+								{theme === "dark"
+									? "Switch to light mode"
+									: "Switch to dark mode"}
 							</button>
 
 							<button
@@ -253,6 +272,7 @@ export default function Header() {
 					</SheetContent>
 				</Sheet>
 			</nav>
+			<ExportDialog open={isExportOpen} setOpen={setIsExportOpen} />
 		</header>
 	);
 }
